@@ -13,6 +13,7 @@ import (
 func GetMux() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/ip", IPHandler)
+	r.HandleFunc("/user-agent", UserAgentHandler)
 	return r
 }
 
@@ -23,8 +24,14 @@ func IPHandler(w http.ResponseWriter, r *http.Request) {
 		writeErrorJSON(w, errors.Wrapf(err, "cannot parse addr: %v", r.RemoteAddr))
 	}
 
-	v := ipResponse{Origin: h}
-	if err := writeJSON(w, v); err != nil {
-		// TODO handle
+	if err := writeJSON(w, ipResponse{h}); err != nil {
+		writeErrorJSON(w, errors.Wrap(err, "failed to write json")) // TODO handle this error in writeJSON(w,v)
+	}
+}
+
+// UserAgentHandler returns user agent.
+func UserAgentHandler(w http.ResponseWriter, r *http.Request) {
+	if err := writeJSON(w, userAgentResponse{r.UserAgent()}); err != nil {
+		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
 	}
 }

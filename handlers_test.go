@@ -38,3 +38,15 @@ func TestIP(t *testing.T) {
 	require.Nil(t, json.Unmarshal(b, &v))
 	require.Equal(t, "127.0.0.1", v.Origin)
 }
+
+func TestUserAgent(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	b := get(t, srv.URL+"/user-agent")
+	v := struct {
+		UA string `json:"user-agent"`
+	}{}
+	require.Nil(t, json.Unmarshal(b, &v))
+	require.NotEmpty(t, v.UA)
+}

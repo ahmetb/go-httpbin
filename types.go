@@ -11,3 +11,7 @@ type errorResponse struct {
 type errObj struct {
 	Message string `json:"message"`
 }
+
+type userAgentResponse struct {
+	UA string `json:"user-agent"`
+}
