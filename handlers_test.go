@@ -50,3 +50,15 @@ func TestUserAgent(t *testing.T) {
 	require.Nil(t, json.Unmarshal(b, &v))
 	require.NotEmpty(t, v.UA)
 }
+
+func TestHeaders(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	b := get(t, srv.URL+"/headers")
+	v := struct {
+		Headers map[string]string `json:"headers"`
+	}{}
+	require.Nil(t, json.Unmarshal(b, &v))
+	require.NotEmpty(t, v.Headers["User-Agent"]) // provided by default Go HTTP client
+}

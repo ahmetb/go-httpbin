@@ -14,6 +14,7 @@ func GetMux() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/ip", IPHandler)
 	r.HandleFunc("/user-agent", UserAgentHandler)
+	r.HandleFunc("/headers", HeadersHandler)
 	return r
 }
 
@@ -32,6 +33,17 @@ func IPHandler(w http.ResponseWriter, r *http.Request) {
 // UserAgentHandler returns user agent.
 func UserAgentHandler(w http.ResponseWriter, r *http.Request) {
 	if err := writeJSON(w, userAgentResponse{r.UserAgent()}); err != nil {
+		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
+	}
+}
+
+// HeadersHandler returns user agent.
+func HeadersHandler(w http.ResponseWriter, r *http.Request) {
+	hdr := make(map[string]string, len(r.Header))
+	for k, v := range r.Header {
+		hdr[k] = v[0]
+	}
+	if err := writeJSON(w, headersResponse{hdr}); err != nil {
 		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
 	}
 }

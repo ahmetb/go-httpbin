@@ -15,3 +15,7 @@ type errObj struct {
 type userAgentResponse struct {
 	UA string `json:"user-agent"`
 }
+
+type headersResponse struct {
+	Headers map[string]string `json:"headers"`
+}
