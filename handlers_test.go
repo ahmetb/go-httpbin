@@ -177,6 +177,17 @@ func TestStatus_assertValidCodes(t *testing.T) {
 	}
 }
 
+func TestStatus_invalidCodeWorks(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	code := 777
+	u := fmt.Sprintf("%s/status/%d", srv.URL, code)
+	resp, err := noFollowGet(u)
+	require.Nil(t, err, u)
+	require.Equal(t, code, resp.StatusCode, u)
+}
+
 func TestStatus_3xxLocationHeader(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
