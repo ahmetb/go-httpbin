@@ -1,0 +1,10 @@
+sudo: false
+language: go
+go: go1.6
+install:
+  - go get -u github.com/golang/lint/golint
+script:
+  - test -z "$(gofmt -s -l -w . | tee /dev/stderr)"
+  - test -z "$(golint . | tee /dev/stderr)"
+  - go vet -v .
+  - go test -v -cover  ./...

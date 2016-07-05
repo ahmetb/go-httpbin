@@ -23,10 +23,10 @@ var (
 	BinaryChunkSize = 64 * 1024
 
 	// DelayMax is the maximum execution time for /delay endpoint.
-	DelayMax time.Duration = 10 * time.Second
+	DelayMax = 10 * time.Second
 
 	// StreamInterval is the default interval between writing objects to the stream.
-	StreamInterval time.Duration = 1 * time.Second
+	StreamInterval = 1 * time.Second
 )
 
 // GetMux returns the mux with handlers for httpbin endpoints registered.
