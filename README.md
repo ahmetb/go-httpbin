@@ -1,4 +1,4 @@
-# go-httpbin [![GoDoc](https://godoc.org/github.com/ahmetalpbalkan/go-httpbin?status.png)](https://godoc.org/github.com/ahmetalpbalkan/go-httpbin)
+# go-httpbin [![GoDoc](https://godoc.org/github.com/ahmetalpbalkan/go-httpbin?status.png)](https://godoc.org/github.com/ahmetalpbalkan/go-httpbin)[![Build Status](https://travis-ci.org/ahmetalpbalkan/go-httpbin.svg?branch=master)](https://travis-ci.org/ahmetalpbalkan/go-httpbin)
 
 A Go handler that lets you test your HTTP client, retry logic, streaming behavior, timeouts etc.
 with the endpoints of [httpbin.org][ht] locally in a [`net/http/httptest.Server`][hts].
