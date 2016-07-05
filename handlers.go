@@ -19,6 +19,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc("/headers", HeadersHandler).Methods("GET")
 	r.HandleFunc("/get", GetHandler).Methods("GET")
 	r.HandleFunc("/redirect/{n:[0-9]+}", RedirectHandler).Methods("GET")
+	r.HandleFunc("/absolute-redirect/{n:[0-9]+}", AbsoluteRedirectHandler).Methods("GET")
 	return r
 }
 
@@ -60,7 +61,7 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // RedirectHandler returns a 302 Found response if n=1 pointing
-// to /get, otherwise to /redirect-relative/n-1
+// to /get, otherwise to /redirect/(n-1)
 func RedirectHandler(w http.ResponseWriter, r *http.Request) {
 	n := mux.Vars(r)["n"]
 	i, _ := strconv.Atoi(n) // shouldn't fail due to route pattern
@@ -72,5 +73,30 @@ func RedirectHandler(w http.ResponseWriter, r *http.Request) {
 		loc = fmt.Sprintf("/redirect/%d", i-1)
 	}
 	w.Header().Set("Location", loc)
+	w.WriteHeader(http.StatusFound)
+}
+
+// AbsoluteRedirectHandler returns a 302 Found response if n=1 pointing
+// to //host/get, otherwise to /host/absolute-redirect/(n-1)
+func AbsoluteRedirectHandler(w http.ResponseWriter, r *http.Request) {
+	n := mux.Vars(r)["n"]
+	i, _ := strconv.Atoi(n) // shouldn't fail due to route pattern
+
+	var loc string
+	if i <= 1 {
+		loc = "/get"
+	} else {
+		loc = fmt.Sprintf("/absolute-redirect/%d", i-1)
+	}
+
+	var scheme string
+	if r.URL.Scheme != "" {
+		scheme = r.URL.Scheme
+	} else {
+		// httptest server does not populate r.URL.{Scheme|Host}
+		// properly for some reason
+		scheme = "http"
+	}
+	w.Header().Set("Location", scheme+"://"+r.Host+loc)
 	w.WriteHeader(http.StatusFound)
 }

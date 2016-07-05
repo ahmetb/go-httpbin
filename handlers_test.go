@@ -13,6 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	errNoFollow = errors.New("do not follow redirect")
+)
+
 func testServer() *httptest.Server {
 	mux := httpbin.GetMux()
 	return httptest.NewServer(mux)
@@ -21,7 +25,7 @@ func testServer() *httptest.Server {
 func noRedirectClient() *http.Client {
 	return &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return errors.New("do not follow redirect")
+			return errNoFollow
 		}}
 }
 
@@ -113,6 +117,7 @@ func TestRedirect(t *testing.T) {
 	compareLocHeader := func(path, expected string) {
 		resp, err := noRedirectClient().Get(srv.URL + path)
 		require.IsType(t, err, &url.Error{}, path)
+		require.Equal(t, err.(*url.Error).Err, errNoFollow, path)
 		require.Equal(t, http.StatusFound, resp.StatusCode, path)
 		require.Equal(t, expected, resp.Header.Get("Location"), path)
 	}
@@ -121,4 +126,22 @@ func TestRedirect(t *testing.T) {
 	compareLocHeader("/redirect/1", "/get")
 	compareLocHeader("/redirect/2", "/redirect/1")
 	compareLocHeader("/redirect/100", "/redirect/99")
+}
+
+func TestAbsoluteRedirect(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	compareLocHeader := func(path, expected string) {
+		resp, err := noRedirectClient().Get(srv.URL + path)
+		require.IsType(t, err, &url.Error{}, path)
+		require.Equal(t, err.(*url.Error).Err, errNoFollow, path)
+		require.Equal(t, http.StatusFound, resp.StatusCode, path)
+		require.Equal(t, expected, resp.Header.Get("Location"), path)
+	}
+
+	compareLocHeader("/absolute-redirect/0", srv.URL+"/get")
+	compareLocHeader("/absolute-redirect/1", srv.URL+"/get")
+	compareLocHeader("/absolute-redirect/2", srv.URL+"/absolute-redirect/1")
+	compareLocHeader("/absolute-redirect/100", srv.URL+"/absolute-redirect/99")
 }
