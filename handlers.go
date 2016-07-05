@@ -14,10 +14,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
+var (
 	// BinaryChunkSize is buffer length used for stuff like generating
 	// large blobs.
 	BinaryChunkSize = 64 * 1024
+
+	// DelayMax is the maximum execution time for /delay endpoint.
+	DelayMax = 10 * time.Second
 )
 
 // GetMux returns the mux with handlers for httpbin endpoints registered.
@@ -32,6 +35,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc("/redirect-to", RedirectToHandler).Methods("GET").Queries("url", "{url:.+}")
 	r.HandleFunc("/status/{code:[0-9]+}", StatusHandler).Methods("GET")
 	r.HandleFunc("/bytes/{n:[0-9]+}", BytesHandler).Methods("GET")
+	r.HandleFunc(`/delay/{n:\d+(\.\d+)?}`, DelayHandler).Methods("GET")
 	return r
 }
 
@@ -181,4 +185,18 @@ func BytesHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+}
+
+// DelayHandler delays responding for min(n, 10) seconds and responds
+// with /get endpoint
+func DelayHandler(w http.ResponseWriter, r *http.Request) {
+	n, _ := strconv.ParseFloat(mux.Vars(r)["n"], 64) // shouldn't fail due to route pattern
+
+	// allow only millisecond precision
+	duration := time.Millisecond * time.Duration(n*float64(time.Second/time.Millisecond))
+	if duration > DelayMax {
+		duration = DelayMax
+	}
+	time.Sleep(duration)
+	GetHandler(w, r)
 }

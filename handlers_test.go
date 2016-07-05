@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/ahmetalpbalkan/go-httpbin"
 	"github.com/stretchr/testify/require"
@@ -227,4 +228,30 @@ func TestBytesHandler_seed(t *testing.T) {
 	b1 := get(t, u)
 	b2 := get(t, u)
 	require.Equal(t, b1, b2, "generated different bytes for the same seed")
+}
+
+func TestDelayHandler(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	n := 0.5
+	s := time.Now()
+	_ = get(t, srv.URL+fmt.Sprintf("/delay/%v", n))
+	e := time.Since(s).Seconds()
+	require.InEpsilon(t, e, n, 0.2, "delay=%v elapsed=%vs", n, e)
+}
+
+func TestDelayHandler_maxLimit(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	orig := httpbin.DelayMax
+	defer func() { httpbin.DelayMax = orig }()
+
+	httpbin.DelayMax = 300 * time.Millisecond
+
+	s := time.Now()
+	_ = get(t, srv.URL+"/delay/20")
+	e := time.Since(s).Seconds()
+	require.InEpsilon(t, e, 0.3, 0.1, "max=%v elapsed=%vs", httpbin.DelayMax, e)
 }
