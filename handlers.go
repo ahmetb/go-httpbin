@@ -2,6 +2,7 @@ package httpbin
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -21,6 +22,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc("/redirect/{n:[0-9]+}", RedirectHandler).Methods("GET")
 	r.HandleFunc("/absolute-redirect/{n:[0-9]+}", AbsoluteRedirectHandler).Methods("GET")
 	r.HandleFunc("/redirect-to", RedirectToHandler).Methods("GET").Queries("url", "{url:.+}")
+	r.HandleFunc("/status/{code:[0-9]+}", StatusHandler).Methods("GET")
 	return r
 }
 
@@ -100,4 +102,48 @@ func RedirectToHandler(w http.ResponseWriter, r *http.Request) {
 	u := mux.Vars(r)["url"]
 	w.Header().Set("Location", u)
 	w.WriteHeader(http.StatusFound)
+}
+
+// StatusHandler returns a proper response for provided status code
+func StatusHandler(w http.ResponseWriter, r *http.Request) {
+	code, _ := strconv.Atoi(mux.Vars(r)["code"])
+
+	statusWritten := false
+	switch code {
+	case http.StatusMovedPermanently,
+		http.StatusFound,
+		http.StatusSeeOther,
+		http.StatusUseProxy,
+		http.StatusTemporaryRedirect:
+		w.Header().Set("Location", "/redirect/1")
+	case http.StatusUnauthorized: // 401
+		w.Header().Set("WWW-Authenticate", `Basic realm="Fake Realm"`)
+	case http.StatusPaymentRequired: // 402
+		w.WriteHeader(code)
+		statusWritten = true
+		io.WriteString(w, "Fuck you, pay me!")
+		w.Header().Set("x-more-info", "http://vimeo.com/22053820")
+	case http.StatusNotAcceptable: // 406
+		w.WriteHeader(code)
+		statusWritten = true
+		io.WriteString(w, `{"message": "Client did not request a supported media type.", "accept": ["image/webp", "image/svg+xml", "image/jpeg", "image/png", "image/*"]}`)
+	case http.StatusTeapot:
+		w.WriteHeader(code)
+		statusWritten = true
+		w.Header().Set("x-more-info", "http://tools.ietf.org/html/rfc2324")
+		io.WriteString(w, `
+    -=[ teapot ]=-
+
+       _...._
+     .'  _ _ '.
+    | ."  ^  ". _,
+    \_;'"---"'|//
+      |       ;/
+      \_     _/
+        '"""'
+`)
+	}
+	if !statusWritten {
+		w.WriteHeader(code)
+	}
 }
