@@ -3,13 +3,21 @@ package httpbin
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"net"
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+)
+
+const (
+	// BinaryChunkSize is buffer length used for stuff like generating
+	// large blobs.
+	BinaryChunkSize = 64 * 1024
 )
 
 // GetMux returns the mux with handlers for httpbin endpoints registered.
@@ -23,6 +31,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc("/absolute-redirect/{n:[0-9]+}", AbsoluteRedirectHandler).Methods("GET")
 	r.HandleFunc("/redirect-to", RedirectToHandler).Methods("GET").Queries("url", "{url:.+}")
 	r.HandleFunc("/status/{code:[0-9]+}", StatusHandler).Methods("GET")
+	r.HandleFunc("/bytes/{n:[0-9]+}", BytesHandler).Methods("GET")
 	return r
 }
 
@@ -145,5 +154,31 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if !statusWritten {
 		w.WriteHeader(code)
+	}
+}
+
+// BytesHandler returns n random bytes of binary data and accepts an
+// optional 'seed' integer query parameter.
+func BytesHandler(w http.ResponseWriter, r *http.Request) {
+	n, _ := strconv.Atoi(mux.Vars(r)["n"]) // shouldn't fail due to route pattern
+
+	seedStr := r.URL.Query().Get("seed")
+	if seedStr == "" {
+		seedStr = fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+
+	seed, _ := strconv.ParseInt(seedStr, 10, 64) // shouldn't fail due to route pattern
+	rnd := rand.New(rand.NewSource(seed))
+	buf := make([]byte, BinaryChunkSize)
+	for n > 0 {
+		rnd.Read(buf) // will never return err
+		if n >= len(buf) {
+			n -= len(buf)
+			w.Write(buf)
+		} else {
+			// last chunk
+			w.Write(buf[:n])
+			break
+		}
 	}
 }

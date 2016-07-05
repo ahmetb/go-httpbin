@@ -189,3 +189,42 @@ func TestStatus_3xxLocationHeader(t *testing.T) {
 		require.NotEmpty(t, resp.Header.Get("Location"), "code=%d", code)
 	}
 }
+
+func TestBytesHandler_size(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	sizes := []int{
+		0, // empty
+		1, // 1 byte
+		httpbin.BinaryChunkSize - 1, // off by one case
+		httpbin.BinaryChunkSize,     // off by one case
+		httpbin.BinaryChunkSize + 1, // off by one case
+		1 * 1024 * 1024,             // 1 MB
+		100 * 1024 * 1024,           // 100 MB
+	}
+	for _, size := range sizes {
+		b := get(t, srv.URL+fmt.Sprintf("/bytes/%d", size))
+		require.Equal(t, size, len(b), "wrong Content-Length for %d", size)
+	}
+}
+
+func TestBytesHandler_noSeed(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	u := srv.URL + "/bytes/1024"
+	b1 := get(t, u)
+	b2 := get(t, u)
+	require.NotEqual(t, b1, b2, "generated the same bytes in multiple runs")
+}
+
+func TestBytesHandler_seed(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	u := srv.URL + "/bytes/1024?seed=1"
+	b1 := get(t, u)
+	b2 := get(t, u)
+	require.Equal(t, b1, b2, "generated different bytes for the same seed")
+}
