@@ -26,15 +26,15 @@ var (
 // GetMux returns the mux with handlers for httpbin endpoints registered.
 func GetMux() *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/ip", IPHandler).Methods("GET")
-	r.HandleFunc("/user-agent", UserAgentHandler).Methods("GET")
-	r.HandleFunc("/headers", HeadersHandler).Methods("GET")
-	r.HandleFunc("/get", GetHandler).Methods("GET")
-	r.HandleFunc("/redirect/{n:[0-9]+}", RedirectHandler).Methods("GET")
-	r.HandleFunc("/absolute-redirect/{n:[0-9]+}", AbsoluteRedirectHandler).Methods("GET")
-	r.HandleFunc("/redirect-to", RedirectToHandler).Methods("GET").Queries("url", "{url:.+}")
-	r.HandleFunc("/status/{code:[0-9]+}", StatusHandler).Methods("GET")
-	r.HandleFunc("/bytes/{n:[0-9]+}", BytesHandler).Methods("GET")
+	r.HandleFunc(`/ip`, IPHandler).Methods("GET")
+	r.HandleFunc(`/user-agent`, UserAgentHandler).Methods("GET")
+	r.HandleFunc(`/headers`, HeadersHandler).Methods("GET")
+	r.HandleFunc(`/get`, GetHandler).Methods("GET")
+	r.HandleFunc(`/redirect/{n:[\d]+}`, RedirectHandler).Methods("GET")
+	r.HandleFunc(`/absolute-redirect/{n:[\d]+}`, AbsoluteRedirectHandler).Methods("GET")
+	r.HandleFunc(`/redirect-to`, RedirectToHandler).Methods("GET").Queries("url", "{url:.+}")
+	r.HandleFunc(`/status/{code:[\d]+}`, StatusHandler).Methods("GET")
+	r.HandleFunc(`/bytes/{n:[\d]+}`, BytesHandler).Methods("GET")
 	r.HandleFunc(`/delay/{n:\d+(\.\d+)?}`, DelayHandler).Methods("GET")
 	return r
 }
