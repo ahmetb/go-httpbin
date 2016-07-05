@@ -1,3 +1,5 @@
+// Package httpbin providers HTTP handlers for httpbin.org endpoints and a
+// multiplexer to directly hook it up to any http.Server or httptest.Server.
 package httpbin
 
 import (
