@@ -1,6 +1,7 @@
 package httpbin
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
@@ -20,7 +21,10 @@ var (
 	BinaryChunkSize = 64 * 1024
 
 	// DelayMax is the maximum execution time for /delay endpoint.
-	DelayMax = 10 * time.Second
+	DelayMax time.Duration = 10 * time.Second
+
+	// StreamInterval is the default interval between writing objects to the stream.
+	StreamInterval time.Duration = 1 * time.Second
 )
 
 // GetMux returns the mux with handlers for httpbin endpoints registered.
@@ -36,6 +40,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/status/{code:[\d]+}`, StatusHandler).Methods("GET")
 	r.HandleFunc(`/bytes/{n:[\d]+}`, BytesHandler).Methods("GET")
 	r.HandleFunc(`/delay/{n:\d+(\.\d+)?}`, DelayHandler).Methods("GET")
+	r.HandleFunc(`/stream/{n:[\d]+}`, StreamHandler).Methods("GET")
 	return r
 }
 
@@ -199,4 +204,23 @@ func DelayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	time.Sleep(duration)
 	GetHandler(w, r)
+}
+
+// StreamHandler writes a json object to a new line every second.
+func StreamHandler(w http.ResponseWriter, r *http.Request) {
+	n, _ := strconv.Atoi(mux.Vars(r)["n"]) // shouldn't fail due to route pattern
+	nl := []byte{'\n'}
+	// allow only millisecond precision
+	for i := 0; i < n; i++ {
+		time.Sleep(StreamInterval)
+		b, _ := json.Marshal(struct {
+			N    int       `json:"n"`
+			Time time.Time `json:"time"`
+		}{i, time.Now().UTC()})
+		w.Write(b)
+		w.Write(nl)
+		if f, ok := w.(http.Flusher); ok {
+			f.Flush()
+		}
+	}
 }

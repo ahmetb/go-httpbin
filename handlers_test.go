@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -265,4 +266,46 @@ func TestDelay_limited(t *testing.T) {
 	_ = get(t, srv.URL+"/delay/20")
 	e := time.Since(s).Seconds()
 	require.InEpsilon(t, e, 0.3, 0.1, "max=%v elapsed=%vs", httpbin.DelayMax, e)
+}
+
+func TestStream(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	orig := httpbin.StreamInterval
+	new := time.Millisecond * 100
+	httpbin.StreamInterval = new
+	defer func() { httpbin.StreamInterval = orig }()
+
+	total := 10
+	resp, err := http.Get(srv.URL + fmt.Sprintf("/stream/%d", total))
+	require.Nil(t, err, "request failed")
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	dec := json.NewDecoder(resp.Body)
+
+	var lastMsg time.Time
+	var m struct {
+		N    int       `json:"n"`
+		Time time.Time `json:"time"`
+	}
+	n := 0
+	for {
+		err := dec.Decode(&m)
+		if err == io.EOF {
+			break
+		}
+		require.Nil(t, err, "cannot decode msg")
+		t.Logf("msg {n=%v, time=%v} -- recvd at %v", m.N, m.Time, time.Now().UTC())
+		if lastMsg.IsZero() {
+			lastMsg = time.Now()
+		} else {
+			elapsedMs := time.Since(lastMsg).Seconds() * 1000
+			require.InDelta(t, int(new/time.Millisecond), int(elapsedMs), 20, "time since last msg=%dms", elapsedMs)
+			lastMsg = time.Now()
+		}
+		n++
+	}
+	require.Equal(t, total, n, "some messages not received")
 }
