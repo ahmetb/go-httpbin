@@ -15,7 +15,7 @@ This way, you can write tests without relying on an external dependency like [ht
 - `/redirect/:n` 302 Redirects _n_ times.
 - `/absolute-redirect/:n` 302 Absolute redirects _n_ times.
 - `/redirect-to?url=foo` 302 Redirects to the _foo_ URL.
-- `/stream/:n` Streams n lines of JSON objects
+- `/stream/:n` Streams _n_ lines of JSON objects
 - `/delay/:n` Delays responding for _min(n, 10)_ seconds.
 - `/bytes/:n` Generates _n_ random bytes of binary data, accepts optional _seed_ integer parameter.
 
