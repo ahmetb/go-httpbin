@@ -20,6 +20,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc("/get", GetHandler).Methods("GET")
 	r.HandleFunc("/redirect/{n:[0-9]+}", RedirectHandler).Methods("GET")
 	r.HandleFunc("/absolute-redirect/{n:[0-9]+}", AbsoluteRedirectHandler).Methods("GET")
+	r.HandleFunc("/redirect-to", RedirectToHandler).Methods("GET").Queries("url", "{url:.+}")
 	return r
 }
 
@@ -98,5 +99,13 @@ func AbsoluteRedirectHandler(w http.ResponseWriter, r *http.Request) {
 		scheme = "http"
 	}
 	w.Header().Set("Location", scheme+"://"+r.Host+loc)
+	w.WriteHeader(http.StatusFound)
+}
+
+// RedirectToHandler returns a 302 Found response pointing to
+// the url query parameter
+func RedirectToHandler(w http.ResponseWriter, r *http.Request) {
+	u := mux.Vars(r)["url"]
+	w.Header().Set("Location", u)
 	w.WriteHeader(http.StatusFound)
 }

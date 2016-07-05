@@ -54,6 +54,14 @@ func req(t *testing.T, url, method string) []byte {
 	return b
 }
 
+func assertLocationHeader(t *testing.T, u, expected string) {
+	resp, err := noRedirectClient().Get(u)
+	require.IsType(t, &url.Error{}, err, u)
+	require.Equal(t, err.(*url.Error).Err, errNoFollow, u)
+	require.Equal(t, http.StatusFound, resp.StatusCode, u)
+	require.Equal(t, expected, resp.Header.Get("Location"), u)
+}
+
 func TestIP(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
@@ -114,34 +122,27 @@ func TestRedirect(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
 
-	compareLocHeader := func(path, expected string) {
-		resp, err := noRedirectClient().Get(srv.URL + path)
-		require.IsType(t, err, &url.Error{}, path)
-		require.Equal(t, err.(*url.Error).Err, errNoFollow, path)
-		require.Equal(t, http.StatusFound, resp.StatusCode, path)
-		require.Equal(t, expected, resp.Header.Get("Location"), path)
-	}
-
-	compareLocHeader("/redirect/0", "/get")
-	compareLocHeader("/redirect/1", "/get")
-	compareLocHeader("/redirect/2", "/redirect/1")
-	compareLocHeader("/redirect/100", "/redirect/99")
+	assertLocationHeader(t, srv.URL+"/redirect/0", "/get")
+	assertLocationHeader(t, srv.URL+"/redirect/1", "/get")
+	assertLocationHeader(t, srv.URL+"/redirect/2", "/redirect/1")
+	assertLocationHeader(t, srv.URL+"/redirect/100", "/redirect/99")
 }
 
 func TestAbsoluteRedirect(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
 
-	compareLocHeader := func(path, expected string) {
-		resp, err := noRedirectClient().Get(srv.URL + path)
-		require.IsType(t, err, &url.Error{}, path)
-		require.Equal(t, err.(*url.Error).Err, errNoFollow, path)
-		require.Equal(t, http.StatusFound, resp.StatusCode, path)
-		require.Equal(t, expected, resp.Header.Get("Location"), path)
-	}
+	assertLocationHeader(t, srv.URL+"/absolute-redirect/0", srv.URL+"/get")
+	assertLocationHeader(t, srv.URL+"/absolute-redirect/1", srv.URL+"/get")
+	assertLocationHeader(t, srv.URL+"/absolute-redirect/2", srv.URL+"/absolute-redirect/1")
+	assertLocationHeader(t, srv.URL+"/absolute-redirect/100", srv.URL+"/absolute-redirect/99")
+}
 
-	compareLocHeader("/absolute-redirect/0", srv.URL+"/get")
-	compareLocHeader("/absolute-redirect/1", srv.URL+"/get")
-	compareLocHeader("/absolute-redirect/2", srv.URL+"/absolute-redirect/1")
-	compareLocHeader("/absolute-redirect/100", srv.URL+"/absolute-redirect/99")
+func TestRedirectTo(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	assertLocationHeader(t, srv.URL+"/redirect-to?url=ip", "ip")
+	assertLocationHeader(t, srv.URL+"/redirect-to?url=/ip", "/ip")
+	assertLocationHeader(t, srv.URL+"/redirect-to?url=http%3A%2F%2Fexample.com%2F", "http://example.com/")
 }
