@@ -19,3 +19,10 @@ type userAgentResponse struct {
 type headersResponse struct {
 	Headers map[string]string `json:"headers"`
 }
+
+type getResponse struct {
+	headersResponse
+	ipResponse
+	URL  string                 `json:"url"`
+	Args map[string]interface{} `json:"args"`
+}

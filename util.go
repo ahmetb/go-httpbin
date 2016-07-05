@@ -1,9 +1,13 @@
 package httpbin
 
-import "io"
-import "encoding/json"
-import "github.com/pkg/errors"
-import "net/http"
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/url"
+
+	"github.com/pkg/errors"
+)
 
 func writeJSON(w io.Writer, v interface{}) error {
 	if err := json.NewEncoder(w).Encode(v); err != nil {
@@ -15,4 +19,25 @@ func writeJSON(w io.Writer, v interface{}) error {
 func writeErrorJSON(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
 	_ = writeJSON(w, errorResponse{errObj{err.Error()}}) // ignore error, can't do anything
+}
+
+func getHeaders(r *http.Request) map[string]string {
+	hdr := make(map[string]string, len(r.Header))
+	for k, v := range r.Header {
+		hdr[k] = v[0]
+	}
+	return hdr
+}
+
+func flattenValues(uv url.Values) map[string]interface{} {
+	m := make(map[string]interface{}, len(uv))
+
+	for k, v := range uv {
+		if len(v) == 1 {
+			m[k] = v[0]
+		} else {
+			m[k] = v
+		}
+	}
+	return m
 }

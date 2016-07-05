@@ -17,12 +17,26 @@ func testServer() *httptest.Server {
 }
 
 func get(t *testing.T, url string) []byte {
-	r, err := http.Get(url)
-	require.Nil(t, err, "request failed")
-	defer r.Body.Close()
-	require.Equal(t, http.StatusOK, r.StatusCode)
+	return req(t, url, "GET")
+}
 
-	b, err := ioutil.ReadAll(r.Body)
+func post(t *testing.T, url string) []byte {
+	return req(t, url, "POST")
+}
+
+func req(t *testing.T, url, method string) []byte {
+	cl := &http.Client{}
+
+	r, err := http.NewRequest(method, url, nil)
+	require.Nil(t, err, "cannot create request")
+
+	resp, err := cl.Do(r)
+	require.Nil(t, err, "request failed")
+
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	b, err := ioutil.ReadAll(resp.Body)
 	require.Nil(t, err, "failed to read response body")
 	return b
 }
@@ -61,4 +75,24 @@ func TestHeaders(t *testing.T) {
 	}{}
 	require.Nil(t, json.Unmarshal(b, &v))
 	require.NotEmpty(t, v.Headers["User-Agent"]) // provided by default Go HTTP client
+}
+
+func TestGet(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	b := get(t, srv.URL+"/get?k1=v1&k1=v2&k3=v3")
+	v := struct {
+		Args    map[string]interface{} `json:"args"`
+		Headers map[string]string      `json:"headers"`
+		Origin  string                 `json:"origin"`
+	}{}
+	require.Nil(t, json.Unmarshal(b, &v))
+	require.NotEmpty(t, v.Args, "args empty")
+	require.EqualValues(t, map[string]interface{}{
+		"k1": []interface{}{"v1", "v2"},
+		"k3": "v3",
+	}, v.Args)
+	require.NotEmpty(t, v.Headers)
+	require.NotEmpty(t, v.Origin)
 }
