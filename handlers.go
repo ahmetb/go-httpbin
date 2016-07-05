@@ -100,7 +100,7 @@ func RedirectHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // AbsoluteRedirectHandler returns a 302 Found response if n=1 pointing
-// to //host/get, otherwise to /host/absolute-redirect/(n-1)
+// to /host/get, otherwise to /host/absolute-redirect/(n-1)
 func AbsoluteRedirectHandler(w http.ResponseWriter, r *http.Request) {
 	n := mux.Vars(r)["n"]
 	i, _ := strconv.Atoi(n) // shouldn't fail due to route pattern

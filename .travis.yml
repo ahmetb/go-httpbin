@@ -3,6 +3,8 @@ language: go
 go: go1.6
 install:
   - go get -u github.com/golang/lint/golint
+  - go get github.com/gorilla/mux
+  - go get github.com/pkg/errors
 script:
   - test -z "$(gofmt -s -l -w . | tee /dev/stderr)"
   - test -z "$(golint . | tee /dev/stderr)"
