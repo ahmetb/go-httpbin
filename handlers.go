@@ -90,15 +90,7 @@ func AbsoluteRedirectHandler(w http.ResponseWriter, r *http.Request) {
 		loc = fmt.Sprintf("/absolute-redirect/%d", i-1)
 	}
 
-	var scheme string
-	if r.URL.Scheme != "" {
-		scheme = r.URL.Scheme
-	} else {
-		// httptest server does not populate r.URL.{Scheme|Host}
-		// properly for some reason
-		scheme = "http"
-	}
-	w.Header().Set("Location", scheme+"://"+r.Host+loc)
+	w.Header().Set("Location", "http://"+r.Host+loc)
 	w.WriteHeader(http.StatusFound)
 }
 
