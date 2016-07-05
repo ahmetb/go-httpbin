@@ -2,9 +2,11 @@ package httpbin_test
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/ahmetalpbalkan/go-httpbin"
@@ -14,6 +16,13 @@ import (
 func testServer() *httptest.Server {
 	mux := httpbin.GetMux()
 	return httptest.NewServer(mux)
+}
+
+func noRedirectClient() *http.Client {
+	return &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return errors.New("do not follow redirect")
+		}}
 }
 
 func get(t *testing.T, url string) []byte {
@@ -95,4 +104,21 @@ func TestGet(t *testing.T) {
 	}, v.Args)
 	require.NotEmpty(t, v.Headers)
 	require.NotEmpty(t, v.Origin)
+}
+
+func TestRedirect(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	compareLocHeader := func(path, expected string) {
+		resp, err := noRedirectClient().Get(srv.URL + path)
+		require.IsType(t, err, &url.Error{}, path)
+		require.Equal(t, http.StatusFound, resp.StatusCode, path)
+		require.Equal(t, expected, resp.Header.Get("Location"), path)
+	}
+
+	compareLocHeader("/redirect/0", "/get")
+	compareLocHeader("/redirect/1", "/get")
+	compareLocHeader("/redirect/2", "/redirect/1")
+	compareLocHeader("/redirect/100", "/redirect/99")
 }

@@ -1,7 +1,9 @@
 package httpbin
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"net"
 
@@ -16,6 +18,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc("/user-agent", UserAgentHandler).Methods("GET")
 	r.HandleFunc("/headers", HeadersHandler).Methods("GET")
 	r.HandleFunc("/get", GetHandler).Methods("GET")
+	r.HandleFunc("/redirect/{n:[0-9]+}", RedirectHandler).Methods("GET")
 	return r
 }
 
@@ -54,4 +57,20 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 	if err := writeJSON(w, v); err != nil {
 		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
 	}
+}
+
+// RedirectHandler returns a 302 Found response if n=1 pointing
+// to /get, otherwise to /redirect-relative/n-1
+func RedirectHandler(w http.ResponseWriter, r *http.Request) {
+	n := mux.Vars(r)["n"]
+	i, _ := strconv.Atoi(n) // shouldn't fail due to route pattern
+
+	var loc string
+	if i <= 1 {
+		loc = "/get"
+	} else {
+		loc = fmt.Sprintf("/redirect/%d", i-1)
+	}
+	w.Header().Set("Location", loc)
+	w.WriteHeader(http.StatusFound)
 }
