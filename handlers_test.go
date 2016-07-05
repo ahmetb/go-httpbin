@@ -191,7 +191,7 @@ func TestStatus_3xxLocationHeader(t *testing.T) {
 	}
 }
 
-func TestBytesHandler_size(t *testing.T) {
+func TestBytes_size(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
 
@@ -210,7 +210,7 @@ func TestBytesHandler_size(t *testing.T) {
 	}
 }
 
-func TestBytesHandler_noSeed(t *testing.T) {
+func TestBytes_noSeed(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
 
@@ -220,7 +220,7 @@ func TestBytesHandler_noSeed(t *testing.T) {
 	require.NotEqual(t, b1, b2, "generated the same bytes in multiple runs")
 }
 
-func TestBytesHandler_seed(t *testing.T) {
+func TestBytes_seed(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
 
@@ -230,7 +230,7 @@ func TestBytesHandler_seed(t *testing.T) {
 	require.Equal(t, b1, b2, "generated different bytes for the same seed")
 }
 
-func TestDelayHandler(t *testing.T) {
+func TestDelay_supportsFloat(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
 
@@ -241,7 +241,7 @@ func TestDelayHandler(t *testing.T) {
 	require.InEpsilon(t, e, n, 0.2, "delay=%v elapsed=%vs", n, e)
 }
 
-func TestDelayHandler_maxLimit(t *testing.T) {
+func TestDelay_limited(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
 
