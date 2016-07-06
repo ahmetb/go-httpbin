@@ -33,8 +33,8 @@ func noRedirectClient() *http.Client {
 		}}
 }
 
-func noFollowGet(u string) (*http.Response, error) {
-	resp, err := noRedirectClient().Get(u)
+func noFollowGet(cl *http.Client, u string) (*http.Response, error) {
+	resp, err := cl.Get(u)
 	if err != nil {
 		e, ok := err.(*url.Error)
 		if ok && e.Err != errNoFollow {
@@ -173,7 +173,7 @@ func TestStatus_assertValidCodes(t *testing.T) {
 
 	for _, code := range codes {
 		u := fmt.Sprintf("%s/status/%d", srv.URL, code)
-		resp, err := noFollowGet(u)
+		resp, err := noFollowGet(noRedirectClient(), u)
 		require.Nil(t, err, u)
 		require.Equal(t, code, resp.StatusCode, u)
 	}
@@ -185,7 +185,7 @@ func TestStatus_invalidCodeWorks(t *testing.T) {
 
 	code := 777
 	u := fmt.Sprintf("%s/status/%d", srv.URL, code)
-	resp, err := noFollowGet(u)
+	resp, err := noFollowGet(noRedirectClient(), u)
 	require.Nil(t, err, u)
 	require.Equal(t, code, resp.StatusCode, u)
 }
@@ -198,7 +198,7 @@ func TestStatus_3xxLocationHeader(t *testing.T) {
 
 	for _, code := range codes {
 		u := fmt.Sprintf("%s/status/%d", srv.URL, code)
-		resp, err := noFollowGet(u)
+		resp, err := noFollowGet(noRedirectClient(), u)
 		require.Nil(t, err, u)
 		require.NotEmpty(t, resp.Header.Get("Location"), "code=%d", code)
 	}
@@ -336,5 +336,30 @@ func TestCookies(t *testing.T) {
 		Cookies map[string]string `json:"cookies"`
 	}
 	require.Nil(t, json.Unmarshal(b, &v))
-	require.EqualValues(t, v.Cookies, map[string]string{"k1": "v1", "k2": "v2"})
+	require.EqualValues(t, map[string]string{"k1": "v1", "k2": "v2"}, v.Cookies)
+}
+
+func TestSetCookies(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	u, err := url.Parse(srv.URL)
+	require.Nil(t, err)
+	cj, err := cookiejar.New(nil)
+	require.Nil(t, err)
+
+	cl := noRedirectClient()
+	cl.Jar = cj
+	resp, err := noFollowGet(cl, srv.URL+"/cookies/set?k1=v1&k2=v2")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusFound, resp.StatusCode)
+	require.Equal(t, "/cookies", resp.Header.Get("Location"))
+
+	cs := cj.Cookies(u)
+	m := make(map[string]string, len(cs))
+	for _, v := range cs {
+		m[v.Name] = v.Value
+	}
+	require.EqualValues(t, map[string]string{"k1": "v1", "k2": "v2"}, m)
 }

@@ -44,6 +44,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/delay/{n:\d+(\.\d+)?}`, DelayHandler).Methods("GET")
 	r.HandleFunc(`/stream/{n:[\d]+}`, StreamHandler).Methods("GET")
 	r.HandleFunc(`/cookies`, CookiesHandler).Methods("GET")
+	r.HandleFunc(`/cookies/set`, SetCookiesHandler).Methods("GET")
 	return r
 }
 
@@ -230,7 +231,22 @@ func StreamHandler(w http.ResponseWriter, r *http.Request) {
 
 // CookiesHandler returns the cookies provided in the request.
 func CookiesHandler(w http.ResponseWriter, r *http.Request) {
-	if err := writeJSON(w, cookiesResponse{getCookies(r)}); err != nil {
+	if err := writeJSON(w, cookiesResponse{getCookies(r.Cookies())}); err != nil {
 		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
 	}
+}
+
+// SetCookiesHandler sets the query key/value pairs as cookies
+// in the response and returns a 302 redirect to /cookies.
+func SetCookiesHandler(w http.ResponseWriter, r *http.Request) {
+	for k := range r.URL.Query() {
+		v := r.URL.Query().Get(k)
+		http.SetCookie(w, &http.Cookie{
+			Name:  k,
+			Value: v,
+			Path:  "/",
+		})
+	}
+	w.Header().Set("Location", "/cookies")
+	w.WriteHeader(http.StatusFound)
 }

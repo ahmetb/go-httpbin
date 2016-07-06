@@ -22,6 +22,7 @@ This way, you can write tests without relying on an external dependency like [ht
 - `/delay/:n` Delays responding for _min(n, 10)_ seconds.
 - `/bytes/:n` Generates _n_ random bytes of binary data, accepts optional _seed_ integer parameter.
 - `/cookies` Returns the cookies.
+- `/cookies/set?name=value` Sets one or more simple cookies.
 
 ## How to use
 
