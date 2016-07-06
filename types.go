@@ -20,6 +20,10 @@ type headersResponse struct {
 	Headers map[string]string `json:"headers"`
 }
 
+type cookiesResponse struct {
+	Cookies map[string]string `json:"cookies"`
+}
+
 type getResponse struct {
 	headersResponse
 	ipResponse

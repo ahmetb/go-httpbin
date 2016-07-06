@@ -29,6 +29,15 @@ func getHeaders(r *http.Request) map[string]string {
 	return hdr
 }
 
+func getCookies(r *http.Request) map[string]string {
+	c := r.Cookies()
+	m := make(map[string]string, len(c))
+	for _, v := range r.Cookies() {
+		m[v.Name] = v.Value
+	}
+	return m
+}
+
 func flattenValues(uv url.Values) map[string]interface{} {
 	m := make(map[string]interface{}, len(uv))
 

@@ -12,7 +12,7 @@ This way, you can write tests without relying on an external dependency like [ht
 
 - `/ip` Returns Origin IP.
 - `/user-agent` Returns user-agent.
-- `/headers` Returns header dict.
+- `/headers` Returns headers.
 - `/get` Returns GET data.
 - `/status/:code` Returns given HTTP Status code.
 - `/redirect/:n` 302 Redirects _n_ times.
@@ -21,7 +21,7 @@ This way, you can write tests without relying on an external dependency like [ht
 - `/stream/:n` Streams _n_ lines of JSON objects
 - `/delay/:n` Delays responding for _min(n, 10)_ seconds.
 - `/bytes/:n` Generates _n_ random bytes of binary data, accepts optional _seed_ integer parameter.
-
+- `/cookies` Returns the cookies.
 
 ## How to use
 

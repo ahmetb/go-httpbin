@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -308,4 +309,32 @@ func TestStream(t *testing.T) {
 		n++
 	}
 	require.Equal(t, total, n, "some messages not received")
+}
+
+func TestCookies(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	u, err := url.Parse(srv.URL)
+	require.Nil(t, err)
+	cj, err := cookiejar.New(nil)
+	require.Nil(t, err)
+	cj.SetCookies(u, []*http.Cookie{
+		{Name: "k1", Value: "v1"},
+		{Name: "k2", Value: "v2"},
+	})
+	cl := &http.Client{Jar: cj}
+	resp, err := cl.Get(srv.URL + "/cookies")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	b, err := ioutil.ReadAll(resp.Body)
+	require.Nil(t, err)
+
+	var v struct {
+		Cookies map[string]string `json:"cookies"`
+	}
+	require.Nil(t, json.Unmarshal(b, &v))
+	require.EqualValues(t, v.Cookies, map[string]string{"k1": "v1", "k2": "v2"})
 }
