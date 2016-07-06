@@ -1,6 +1,7 @@
 package httpbin_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -393,4 +394,17 @@ func TestDeleteCookies(t *testing.T) {
 	require.Contains(t, cs, "k2=")
 	require.Contains(t, cs, "k3=v3")
 	require.Equal(t, 3, len(cs))
+}
+
+func TestDrip_code(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/drip?numbytes=10&duration=0.1&code=500")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	b, err := ioutil.ReadAll(resp.Body)
+	require.Nil(t, err)
+	require.Equal(t, bytes.Repeat([]byte{'*'}, 10), b)
 }

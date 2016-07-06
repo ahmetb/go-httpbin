@@ -24,6 +24,8 @@ This way, you can write tests without relying on an external dependency like [ht
 - `/cookies` Returns the cookies.
 - `/cookies/set?name=value` Sets one or more simple cookies.
 - `/cookies/delete?name` Deletes one or more simple cookies.
+- `/drip?numbytes=n&duration=s&delay=s&code=code` Drips data over a duration after
+  an optional initial _delay_, then optionally returns with the given status _code_.
 
 ## How to use
 
@@ -56,7 +58,6 @@ func TestDownload(t *testing.T)
 
 If you would like to contribute, I am hoping to implement the following
 
-- [ ] `/drip` endpoint
 - [ ] `/stream-bytes` endpoint
 - [ ] 100% go test coverage
 

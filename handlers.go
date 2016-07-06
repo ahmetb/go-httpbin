@@ -43,6 +43,9 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/bytes/{n:[\d]+}`, BytesHandler).Methods("GET")
 	r.HandleFunc(`/delay/{n:\d+(\.\d+)?}`, DelayHandler).Methods("GET")
 	r.HandleFunc(`/stream/{n:[\d]+}`, StreamHandler).Methods("GET")
+	r.HandleFunc(`/drip`, DripHandler).Methods("GET").Queries(
+		"numbytes", `{numbytes:\d+}`,
+		"duration", `{duration:\d+(\.\d+)?}`)
 	r.HandleFunc(`/cookies`, CookiesHandler).Methods("GET")
 	r.HandleFunc(`/cookies/set`, SetCookiesHandler).Methods("GET")
 	r.HandleFunc(`/cookies/delete`, DeleteCookiesHandler).Methods("GET")
@@ -267,4 +270,44 @@ func DeleteCookiesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Location", "/cookies")
 	w.WriteHeader(http.StatusFound)
+}
+
+// DripHandler drips data over a duration after an optional initial delay,
+// then optionally returns with the given status code.
+func DripHandler(w http.ResponseWriter, r *http.Request) {
+	var retCode int
+
+	retCodeStr := r.URL.Query().Get("code")
+	delayStr := r.URL.Query().Get("delay")
+	durationSec, _ := strconv.ParseFloat(mux.Vars(r)["duration"], 32) // shouldn't fail due to route pattern
+	numBytes, _ := strconv.Atoi(mux.Vars(r)["numbytes"])              // shouldn't fail due to route pattern
+
+	if retCodeStr != "" { // optional: status code
+		var err error
+		retCode, err = strconv.Atoi(r.URL.Query().Get("code"))
+		if err != nil {
+			writeErrorJSON(w, errors.New("failed to parse 'code'"))
+			return
+		}
+		w.WriteHeader(retCode)
+	}
+
+	if delayStr != "" { // optional: initial delay
+		delaySec, err := strconv.ParseFloat(r.URL.Query().Get("delay"), 64)
+		if err != nil {
+			writeErrorJSON(w, errors.New("failed to parse 'delay'"))
+			return
+		}
+		delayMs := (time.Second / time.Millisecond) * time.Duration(delaySec)
+		time.Sleep(delayMs * time.Millisecond)
+	}
+
+	t := time.Second * time.Duration(durationSec) / time.Duration(numBytes)
+	for i := 0; i < numBytes; i++ {
+		w.Write([]byte{'*'})
+		if f, ok := w.(http.Flusher); ok {
+			f.Flush()
+		}
+		time.Sleep(t)
+	}
 }
