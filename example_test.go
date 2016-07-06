@@ -11,7 +11,7 @@ import (
 	"github.com/ahmetalpbalkan/go-httpbin"
 )
 
-func ExampleGetMux() {
+func ExampleGetMux_httptest() {
 	srv := httptest.NewServer(httpbin.GetMux())
 	defer srv.Close()
 
@@ -28,4 +28,8 @@ func ExampleGetMux() {
 	}
 	fmt.Printf("Retrieved %d bytes.\n", len(b))
 	// Output: Retrieved 65536 bytes.
+}
+
+func ExampleGetMux_server() {
+	log.Fatal(http.ListenAndServe(":8080", httpbin.GetMux()))
 }

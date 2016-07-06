@@ -29,7 +29,24 @@ This way, you can write tests without relying on an external dependency like [ht
 
 ## How to use
 
-Let's say you are writing a test case that requires you to download a binary file from a server:
+Standing up a Go server running httpbin endpoints is just 1 line:
+
+```go
+package main
+
+import (
+    "log"
+    "net/http"
+    "github.com/ahmetalpbalkan/go-httpbin"
+)
+
+func main() {
+	log.Fatal(http.ListenAndServe(":8080", httpbin.GetMux()))
+}
+```
+
+Let's say you do not want a server running all the time because you just want to
+test your HTTP logic after all. Integrating `httpbin` to your tests is very simple:
 
 ```go
 package test
@@ -51,6 +68,7 @@ func TestDownload(t *testing.T)
         t.Fatal(err)
     }
     // read from an actual HTTP server hosted locally
+    // test whatever you are going to test...
 }
 ```
 
