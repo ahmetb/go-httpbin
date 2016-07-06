@@ -50,6 +50,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/cookies/set`, SetCookiesHandler).Methods("GET")
 	r.HandleFunc(`/cookies/delete`, DeleteCookiesHandler).Methods("GET")
 	r.HandleFunc(`/cache`, CacheHandler).Methods("GET")
+	r.HandleFunc(`/cache/{n:[\d]+}`, SetCacheHandler).Methods("GET")
 	return r
 }
 
@@ -320,5 +321,13 @@ func CacheHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotModified)
 		return
 	}
+	GetHandler(w, r)
+}
+
+// SetCacheHandler sets a Cache-Control header for n seconds and returns with
+// the /get response.
+func SetCacheHandler(w http.ResponseWriter, r *http.Request) {
+	n, _ := strconv.Atoi(mux.Vars(r)["n"]) // shouldn't fail due to route pattern
+	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", n))
 	GetHandler(w, r)
 }

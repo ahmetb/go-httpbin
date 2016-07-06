@@ -419,6 +419,7 @@ func TestCache_ifModifiedSince(t *testing.T) {
 	require.Nil(t, err)
 	defer resp.Body.Close()
 	require.Equal(t, http.StatusNotModified, resp.StatusCode)
+	require.EqualValues(t, 0, resp.ContentLength)
 }
 
 func TestCache_ifNoneMatch(t *testing.T) {
@@ -431,6 +432,7 @@ func TestCache_ifNoneMatch(t *testing.T) {
 	require.Nil(t, err)
 	defer resp.Body.Close()
 	require.Equal(t, http.StatusNotModified, resp.StatusCode)
+	require.EqualValues(t, 0, resp.ContentLength)
 }
 
 func TestCache_none(t *testing.T) {
@@ -441,4 +443,17 @@ func TestCache_none(t *testing.T) {
 	require.Nil(t, err)
 	defer resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.NotEqual(t, int64(0), resp.ContentLength)
+}
+
+func TestSetCache_none(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/cache/5")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Equal(t, "public, max-age=5", resp.Header.Get("Cache-Control"), "Cache-Control header")
+	require.NotEqual(t, int64(0), resp.ContentLength)
 }
