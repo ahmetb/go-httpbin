@@ -49,6 +49,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/cookies`, CookiesHandler).Methods("GET")
 	r.HandleFunc(`/cookies/set`, SetCookiesHandler).Methods("GET")
 	r.HandleFunc(`/cookies/delete`, DeleteCookiesHandler).Methods("GET")
+	r.HandleFunc(`/cache`, CacheHandler).Methods("GET")
 	return r
 }
 
@@ -310,4 +311,14 @@ func DripHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		time.Sleep(t)
 	}
+}
+
+// CacheHandler returns 200 with the response of /get unless an If-Modified-Since
+//or If-None-Match header is provided, when it returns a 304.
+func CacheHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("If-Modified-Since") != "" || r.Header.Get("If-None-Match") != "" {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+	GetHandler(w, r)
 }

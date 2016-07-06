@@ -408,3 +408,37 @@ func TestDrip_code(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, bytes.Repeat([]byte{'*'}, 10), b)
 }
+
+func TestCache_ifModifiedSince(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	req, _ := http.NewRequest("GET", srv.URL+"/cache", nil)
+	req.Header.Set("If-Modified-Since", "Sat, 29 Oct 1994 19:43:31 GMT")
+	resp, err := http.DefaultClient.Do(req)
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusNotModified, resp.StatusCode)
+}
+
+func TestCache_ifNoneMatch(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	req, _ := http.NewRequest("GET", srv.URL+"/cache", nil)
+	req.Header.Set("If-None-Match", "some-etag")
+	resp, err := http.DefaultClient.Do(req)
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusNotModified, resp.StatusCode)
+}
+
+func TestCache_none(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/cache")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+}

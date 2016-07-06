@@ -26,6 +26,8 @@ This way, you can write tests without relying on an external dependency like [ht
 - `/cookies/delete?name` Deletes one or more simple cookies.
 - `/drip?numbytes=n&duration=s&delay=s&code=code` Drips data over a duration after
   an optional initial _delay_, then optionally returns with the given status _code_.
+- `/cache` Returns 200 unless an If-Modified-Since or If-None-Match header is provided, when it returns a 304.
+
 
 ## How to use
 
