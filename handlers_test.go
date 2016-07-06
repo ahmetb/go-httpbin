@@ -363,3 +363,34 @@ func TestSetCookies(t *testing.T) {
 	}
 	require.EqualValues(t, map[string]string{"k1": "v1", "k2": "v2"}, m)
 }
+
+func TestDeleteCookies(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	u, err := url.Parse(srv.URL)
+	require.Nil(t, err)
+	cj, err := cookiejar.New(nil)
+	require.Nil(t, err)
+	cj.SetCookies(u, []*http.Cookie{
+		{Name: "k1", Value: "v1"},
+		{Name: "k2", Value: "v2"},
+		{Name: "k3", Value: "v3"},
+	})
+	cl := noRedirectClient()
+	cl.Jar = cj
+	resp, err := noFollowGet(cl, srv.URL+"/cookies/delete?k1&k2")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusFound, resp.StatusCode)
+	require.Equal(t, "/cookies", resp.Header.Get("Location"))
+
+	var cs []string
+	for _, c := range cj.Cookies(u) {
+		cs = append(cs, c.String())
+	}
+	require.Contains(t, cs, "k1=")
+	require.Contains(t, cs, "k2=")
+	require.Contains(t, cs, "k3=v3")
+	require.Equal(t, 3, len(cs))
+}

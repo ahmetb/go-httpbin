@@ -45,6 +45,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/stream/{n:[\d]+}`, StreamHandler).Methods("GET")
 	r.HandleFunc(`/cookies`, CookiesHandler).Methods("GET")
 	r.HandleFunc(`/cookies/set`, SetCookiesHandler).Methods("GET")
+	r.HandleFunc(`/cookies/delete`, DeleteCookiesHandler).Methods("GET")
 	return r
 }
 
@@ -245,6 +246,23 @@ func SetCookiesHandler(w http.ResponseWriter, r *http.Request) {
 			Name:  k,
 			Value: v,
 			Path:  "/",
+		})
+	}
+	w.Header().Set("Location", "/cookies")
+	w.WriteHeader(http.StatusFound)
+}
+
+// DeleteCookiesHandler deletes cookies with provided query value keys
+// in the response by settings a Unix epoch expiration date and returns
+// a 302 redirect to /cookies.
+func DeleteCookiesHandler(w http.ResponseWriter, r *http.Request) {
+	for k := range r.URL.Query() {
+		http.SetCookie(w, &http.Cookie{
+			Name:    k,
+			Value:   "",
+			Path:    "/",
+			Expires: time.Unix(0, 0),
+			MaxAge:  0,
 		})
 	}
 	w.Header().Set("Location", "/cookies")
