@@ -61,7 +61,7 @@ import (
     "github.com/ahmetalpbalkan/go-httpbin"
 )
 
-func TestDownload(t *testing.T)
+func TestDownload(t *testing.T) {
     srv := httptest.NewServer(httpbin.GetMux())
     defer srv.Close()
 
