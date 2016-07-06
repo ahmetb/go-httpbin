@@ -74,13 +74,6 @@ func TestDownload(t *testing.T)
 }
 ```
 
-## TODO
-
-If you would like to contribute, I am hoping to implement the following
-
-- [ ] `/stream-bytes` endpoint
-- [ ] 100% go test coverage
-
 # License
 
 ```
