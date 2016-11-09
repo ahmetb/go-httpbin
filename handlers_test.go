@@ -457,3 +457,23 @@ func TestSetCache_none(t *testing.T) {
 	require.Equal(t, "public, max-age=5", resp.Header.Get("Cache-Control"), "Cache-Control header")
 	require.NotEqual(t, int64(0), resp.ContentLength)
 }
+
+func TestGZIP(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/gzip")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+
+	// net/http.Client removes "Content-Encoding: gzip"
+	// and adds "Content-Type: application/x-gzip" in the
+	// absence of "Content-Type" header.
+	require.EqualValues(t, "application/x-gzip", resp.Header.Get("Content-Type"))
+
+	var v struct {
+		Gzipped bool `json:"gzipped"`
+	}
+	require.Nil(t, json.NewDecoder(resp.Body).Decode(&v))
+	require.True(t, v.Gzipped)
+}

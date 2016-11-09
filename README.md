@@ -28,6 +28,7 @@ This way, you can write tests without relying on an external dependency like [ht
   an optional initial _delay_, then optionally returns with the given status _code_.
 - `/cache` Returns 200 unless an If-Modified-Since or If-None-Match header is provided, when it returns a 304.
 - `/cache/:n` Sets a Cache-Control header for _n_ seconds.
+- `/gzip` Returns gzip-encoded data.
 
 ## How to use
 

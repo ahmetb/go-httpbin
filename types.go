@@ -30,3 +30,9 @@ type getResponse struct {
 	URL  string                 `json:"url"`
 	Args map[string]interface{} `json:"args"`
 }
+
+type gzipResponse struct {
+	headersResponse
+	ipResponse
+	Gzipped bool `json:"gzipped"`
+}

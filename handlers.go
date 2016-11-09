@@ -3,15 +3,15 @@
 package httpbin
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
-
-	"net"
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -51,6 +51,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/cookies/delete`, DeleteCookiesHandler).Methods("GET")
 	r.HandleFunc(`/cache`, CacheHandler).Methods("GET")
 	r.HandleFunc(`/cache/{n:[\d]+}`, SetCacheHandler).Methods("GET")
+	r.HandleFunc(`/gzip`, GZIPHandler).Methods("GET")
 	return r
 }
 
@@ -330,4 +331,22 @@ func SetCacheHandler(w http.ResponseWriter, r *http.Request) {
 	n, _ := strconv.Atoi(mux.Vars(r)["n"]) // shouldn't fail due to route pattern
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", n))
 	GetHandler(w, r)
+}
+
+// GZIPHandler returns a GZIP-encoded response
+func GZIPHandler(w http.ResponseWriter, r *http.Request) {
+	h, _, _ := net.SplitHostPort(r.RemoteAddr)
+
+	v := gzipResponse{
+		headersResponse: headersResponse{getHeaders(r)},
+		ipResponse:      ipResponse{h},
+		Gzipped:         true,
+	}
+
+	w.Header().Set("Content-Encoding", "gzip")
+	ww := gzip.NewWriter(w)
+	defer ww.Close() // flush
+	if err := writeJSON(ww, v); err != nil {
+		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
+	}
 }
