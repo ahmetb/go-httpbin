@@ -29,6 +29,7 @@ This way, you can write tests without relying on an external dependency like [ht
 - `/cache` Returns 200 unless an If-Modified-Since or If-None-Match header is provided, when it returns a 304.
 - `/cache/:n` Sets a Cache-Control header for _n_ seconds.
 - `/gzip` Returns gzip-encoded data.
+- `/deflate` Returns deflate-encoded data.
 
 ## How to use
 

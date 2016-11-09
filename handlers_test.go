@@ -2,6 +2,7 @@ package httpbin_test
 
 import (
 	"bytes"
+	"compress/flate"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -476,4 +477,24 @@ func TestGZIP(t *testing.T) {
 	}
 	require.Nil(t, json.NewDecoder(resp.Body).Decode(&v))
 	require.True(t, v.Gzipped)
+}
+
+func TestDeflate(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/deflate")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+
+	require.EqualValues(t, "deflate", resp.Header.Get("Content-Encoding"))
+
+	var v struct {
+		Deflated bool `json:"deflated"`
+	}
+
+	rr := flate.NewReader(resp.Body)
+	defer rr.Close()
+	require.Nil(t, json.NewDecoder(rr).Decode(&v))
+	require.True(t, v.Deflated)
 }

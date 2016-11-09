@@ -36,3 +36,9 @@ type gzipResponse struct {
 	ipResponse
 	Gzipped bool `json:"gzipped"`
 }
+
+type deflateResponse struct {
+	headersResponse
+	ipResponse
+	Deflated bool `json:"deflated"`
+}

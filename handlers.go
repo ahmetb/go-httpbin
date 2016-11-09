@@ -3,6 +3,7 @@
 package httpbin
 
 import (
+	"compress/flate"
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
@@ -52,6 +53,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/cache`, CacheHandler).Methods("GET")
 	r.HandleFunc(`/cache/{n:[\d]+}`, SetCacheHandler).Methods("GET")
 	r.HandleFunc(`/gzip`, GZIPHandler).Methods("GET")
+	r.HandleFunc(`/deflate`, DeflateHandler).Methods("GET")
 	return r
 }
 
@@ -345,6 +347,24 @@ func GZIPHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Encoding", "gzip")
 	ww := gzip.NewWriter(w)
+	defer ww.Close() // flush
+	if err := writeJSON(ww, v); err != nil {
+		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
+	}
+}
+
+// DeflateHandler returns a DEFLATE-encoded response.
+func DeflateHandler(w http.ResponseWriter, r *http.Request) {
+	h, _, _ := net.SplitHostPort(r.RemoteAddr)
+
+	v := deflateResponse{
+		headersResponse: headersResponse{getHeaders(r)},
+		ipResponse:      ipResponse{h},
+		Deflated:        true,
+	}
+
+	w.Header().Set("Content-Encoding", "deflate")
+	ww, _ := flate.NewWriter(w, flate.BestCompression)
 	defer ww.Close() // flush
 	if err := writeJSON(ww, v); err != nil {
 		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
