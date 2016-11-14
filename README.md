@@ -34,6 +34,8 @@ This way, you can write tests without relying on an external dependency like [ht
 - `/deny` Denied by robots.txt file.
 - `/basic-auth/:user/:passwd` Challenges HTTP Basic Auth.
 - `/hidden-basic-auth/:user/:passwd` Challenges HTTP Basic Auth and returns 404 on failure.
+- `/xml` Returns some XML
+
 
 ## How to use
 

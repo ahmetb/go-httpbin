@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/flate"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -604,4 +605,38 @@ func TestHiddenBasicAuthHandler_correctCreds(t *testing.T) {
 	var v tt
 	require.Nil(t, json.NewDecoder(resp.Body).Decode(&v))
 	require.Equal(t, tt{Authenticated: true, User: "foouser"}, v)
+}
+
+func TestXML(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/xml")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+
+	type slide struct {
+		Type  string `xml:"type,attr"`
+		Title string `xml:"title"`
+	}
+	type val struct {
+		XMLName xml.Name `xml:"slideshow"`
+		Title   string   `xml:"title,attr"`
+		Date    string   `xml:"date,attr"`
+		Author  string   `xml:"author,attr"`
+		Slides  []slide  `xml:"slide"`
+	}
+	var v val
+	b, err := ioutil.ReadAll(resp.Body)
+	require.Nil(t, err)
+	require.Nil(t, xml.Unmarshal(b, &v))
+	require.Equal(t, val{
+		XMLName: xml.Name{Local: "slideshow"},
+		Title:   "Sample Slide Show",
+		Date:    "Date of publication",
+		Author:  "Yours Truly",
+		Slides: []slide{
+			{Type: "all", Title: "Wake up to WonderWidgets!"},
+			{Type: "all", Title: "Overview"},
+		}}, v)
 }
