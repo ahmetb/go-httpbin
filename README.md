@@ -33,6 +33,7 @@ This way, you can write tests without relying on an external dependency like [ht
 - `/robots.txt` Returns some robots.txt rules.
 - `/deny` Denied by robots.txt file.
 - `/basic-auth/:user/:passwd` Challenges HTTP Basic Auth.
+- `/hidden-basic-auth/:user/:passwd` Challenges HTTP Basic Auth and returns 404 on failure.
 
 ## How to use
 

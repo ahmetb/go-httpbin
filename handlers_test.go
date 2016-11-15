@@ -556,10 +556,52 @@ func TestBasicAuthHandler_correctCreds(t *testing.T) {
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	type tt struct {
-		Authorized bool   `json:"authorized"`
-		User       string `json:"string"`
+		Authenticated bool   `json:"authenticated"`
+		User          string `json:"string"`
 	}
 	var v tt
 	require.Nil(t, json.NewDecoder(resp.Body).Decode(&v))
-	require.Equal(t, tt{Authorized: true, User: "foouser"}, v)
+	require.Equal(t, tt{Authenticated: true, User: "foouser"}, v)
+}
+
+func TestHiddenBasicAuthHandler_noAuth(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/hidden-basic-auth/foouser/foopass")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
+func TestHiddenBasicAuthHandler_badCreds(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	req, err := http.NewRequest("GET", srv.URL+"/hidden-basic-auth/foouser/foopass", nil)
+	req.SetBasicAuth("wronguser", "wrongpass")
+	resp, err := http.DefaultClient.Do(req)
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
+func TestHiddenBasicAuthHandler_correctCreds(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	req, err := http.NewRequest("GET", srv.URL+"/hidden-basic-auth/foouser/foopass", nil)
+	req.SetBasicAuth("foouser", "foopass")
+	resp, err := http.DefaultClient.Do(req)
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	type tt struct {
+		Authenticated bool   `json:"authenticated"`
+		User          string `json:"string"`
+	}
+	var v tt
+	require.Nil(t, json.NewDecoder(resp.Body).Decode(&v))
+	require.Equal(t, tt{Authenticated: true, User: "foouser"}, v)
 }

@@ -57,6 +57,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/robots.txt`, RobotsTXTHandler).Methods("GET")
 	r.HandleFunc(`/deny`, DenyHandler).Methods("GET")
 	r.HandleFunc(`/basic-auth/{u}/{p}`, BasicAuthHandler).Methods("GET")
+	r.HandleFunc(`/hidden-basic-auth/{u}/{p}`, HiddenBasicAuthHandler).Methods("GET")
 	return r
 }
 
@@ -399,16 +400,26 @@ func DenyHandler(w http.ResponseWriter, r *http.Request) {
 
 // BasicAuthHandler challenges with given username and password.
 func BasicAuthHandler(w http.ResponseWriter, r *http.Request) {
+	basicAuthHandler(w, r, http.StatusUnauthorized)
+}
+
+// HiddenBasicAuthHandler challenges with given username and password and
+// returns 404 if authentication fails.
+func HiddenBasicAuthHandler(w http.ResponseWriter, r *http.Request) {
+	basicAuthHandler(w, r, http.StatusNotFound)
+}
+
+func basicAuthHandler(w http.ResponseWriter, r *http.Request, status int) {
 	user := mux.Vars(r)["u"]
 	pass := mux.Vars(r)["p"]
 
 	inUser, inPass, ok := r.BasicAuth()
 	if !ok || inUser != user || inPass != pass {
-		w.WriteHeader(http.StatusUnauthorized)
+		w.WriteHeader(status)
 	} else {
 		v := basicAuthResponse{
-			Authorized: true,
-			User:       user,
+			Authenticated: true,
+			User:          user,
 		}
 		if err := writeJSON(w, v); err != nil {
 			writeErrorJSON(w, errors.Wrap(err, "failed to write json"))

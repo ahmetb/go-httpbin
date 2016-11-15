@@ -44,6 +44,6 @@ type deflateResponse struct {
 }
 
 type basicAuthResponse struct {
-	Authorized bool   `json:"authorized"`
-	User       string `json:"string"`
+	Authenticated bool   `json:"authenticated"`
+	User          string `json:"string"`
 }
