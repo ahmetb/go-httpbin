@@ -42,3 +42,8 @@ type deflateResponse struct {
 	ipResponse
 	Deflated bool `json:"deflated"`
 }
+
+type basicAuthResponse struct {
+	Authorized bool   `json:"authorized"`
+	User       string `json:"string"`
+}

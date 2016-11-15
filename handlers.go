@@ -56,6 +56,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/deflate`, DeflateHandler).Methods("GET")
 	r.HandleFunc(`/robots.txt`, RobotsTXTHandler).Methods("GET")
 	r.HandleFunc(`/deny`, DenyHandler).Methods("GET")
+	r.HandleFunc(`/basic-auth/{u}/{p}`, BasicAuthHandler).Methods("GET")
 	return r
 }
 
@@ -394,4 +395,23 @@ func DenyHandler(w http.ResponseWriter, r *http.Request) {
           '-......-'
      YOU SHOULDN'T BE HERE
 `)
+}
+
+// BasicAuthHandler challenges with given username and password.
+func BasicAuthHandler(w http.ResponseWriter, r *http.Request) {
+	user := mux.Vars(r)["u"]
+	pass := mux.Vars(r)["p"]
+
+	inUser, inPass, ok := r.BasicAuth()
+	if !ok || inUser != user || inPass != pass {
+		w.WriteHeader(http.StatusUnauthorized)
+	} else {
+		v := basicAuthResponse{
+			Authorized: true,
+			User:       user,
+		}
+		if err := writeJSON(w, v); err != nil {
+			writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
+		}
+	}
 }

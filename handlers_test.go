@@ -521,3 +521,45 @@ func TestDeny(t *testing.T) {
 	defer resp.Body.Close()
 	require.EqualValues(t, "text/plain", resp.Header.Get("Content-Type"))
 }
+
+func TestBasicAuthHandler_noAuth(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/basic-auth/foouser/foopass")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
+
+func TestBasicAuthHandler_badCreds(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	req, err := http.NewRequest("GET", srv.URL+"/basic-auth/foouser/foopass", nil)
+	req.SetBasicAuth("wronguser", "wrongpass")
+	resp, err := http.DefaultClient.Do(req)
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
+
+func TestBasicAuthHandler_correctCreds(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	req, err := http.NewRequest("GET", srv.URL+"/basic-auth/foouser/foopass", nil)
+	req.SetBasicAuth("foouser", "foopass")
+	resp, err := http.DefaultClient.Do(req)
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	type tt struct {
+		Authorized bool   `json:"authorized"`
+		User       string `json:"string"`
+	}
+	var v tt
+	require.Nil(t, json.NewDecoder(resp.Body).Decode(&v))
+	require.Equal(t, tt{Authorized: true, User: "foouser"}, v)
+}
