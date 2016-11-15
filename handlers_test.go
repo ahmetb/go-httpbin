@@ -498,3 +498,26 @@ func TestDeflate(t *testing.T) {
 	require.Nil(t, json.NewDecoder(rr).Decode(&v))
 	require.True(t, v.Deflated)
 }
+
+func TestRobotsTXT(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/robots.txt")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.EqualValues(t, "text/plain", resp.Header.Get("Content-Type"))
+	b, err := ioutil.ReadAll(resp.Body)
+	require.Nil(t, err)
+	require.EqualValues(t, "User-agent: *\nDisallow: /deny\n", string(b))
+}
+
+func TestDeny(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/deny")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+	require.EqualValues(t, "text/plain", resp.Header.Get("Content-Type"))
+}

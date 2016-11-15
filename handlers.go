@@ -54,6 +54,8 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/cache/{n:[\d]+}`, SetCacheHandler).Methods("GET")
 	r.HandleFunc(`/gzip`, GZIPHandler).Methods("GET")
 	r.HandleFunc(`/deflate`, DeflateHandler).Methods("GET")
+	r.HandleFunc(`/robots.txt`, RobotsTXTHandler).Methods("GET")
+	r.HandleFunc(`/deny`, DenyHandler).Methods("GET")
 	return r
 }
 
@@ -369,4 +371,27 @@ func DeflateHandler(w http.ResponseWriter, r *http.Request) {
 	if err := writeJSON(ww, v); err != nil {
 		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
 	}
+}
+
+// RobotsTXTHandler returns a robots.txt response.
+func RobotsTXTHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprint(w, "User-agent: *\nDisallow: /deny\n")
+}
+
+// DenyHandler returns a plain-text response.
+func DenyHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprint(w, `
+          .-''''''-.
+        .' _      _ '.
+       /   O      O   \
+      :                :
+      |                |
+      :       __       :
+       \  .-"'  '"-.  /
+        '.          .'
+          '-......-'
+     YOU SHOULDN'T BE HERE
+`)
 }

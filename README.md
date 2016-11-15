@@ -30,6 +30,8 @@ This way, you can write tests without relying on an external dependency like [ht
 - `/cache/:n` Sets a Cache-Control header for _n_ seconds.
 - `/gzip` Returns gzip-encoded data.
 - `/deflate` Returns deflate-encoded data.
+- `/robots.txt` Returns some robots.txt rules.
+- `/deny` Denied by robots.txt file.
 
 ## How to use
 
