@@ -10,10 +10,9 @@ import (
 )
 
 func writeJSON(w io.Writer, v interface{}) error {
-	if err := json.NewEncoder(w).Encode(v); err != nil {
-		return errors.Wrap(err, "failed to encode JSON")
-	}
-	return nil
+	e := json.NewEncoder(w)
+	e.SetIndent("", "  ")
+	return errors.Wrap(e.Encode(v), "failed to encode JSON")
 }
 
 func writeErrorJSON(w http.ResponseWriter, err error) {
