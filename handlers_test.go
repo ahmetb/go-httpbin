@@ -640,3 +640,27 @@ func TestXML(t *testing.T) {
 			{Type: "all", Title: "Overview"},
 		}}, v)
 }
+
+func TestJPEG(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/image/jpeg")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+
+	require.EqualValues(t, http.StatusOK, resp.StatusCode)
+	require.EqualValues(t, "image/jpeg", resp.Header.Get("Content-Type"))
+}
+
+func TestPNG(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/image/png")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+
+	require.EqualValues(t, http.StatusOK, resp.StatusCode)
+	require.EqualValues(t, "image/png", resp.Header.Get("Content-Type"))
+}

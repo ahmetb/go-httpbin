@@ -7,7 +7,12 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/color"
+	"image/jpeg"
+	"image/png"
 	"io"
+	"math"
 	"math/rand"
 	"net"
 	"net/http"
@@ -59,6 +64,8 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/deny`, DenyHandler).Methods("GET")
 	r.HandleFunc(`/basic-auth/{u}/{p}`, BasicAuthHandler).Methods("GET")
 	r.HandleFunc(`/hidden-basic-auth/{u}/{p}`, HiddenBasicAuthHandler).Methods("GET")
+	r.HandleFunc(`/image/png`, PNGHandler).Methods("GET")
+	r.HandleFunc(`/image/jpeg`, JPEGHandler).Methods("GET")
 	return r
 }
 
@@ -432,4 +439,80 @@ func basicAuthHandler(w http.ResponseWriter, r *http.Request, status int) {
 func XMLHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/xml")
 	fmt.Fprint(w, xmlData)
+}
+
+// JPEGHandler returns a JPEG image.
+func JPEGHandler(w http.ResponseWriter, r *http.Request) {
+	jpeg.Encode(w, getImg(), nil)
+}
+
+// PNGHandler returns a PNG image.
+func PNGHandler(w http.ResponseWriter, r *http.Request) {
+	png.Encode(w, getImg())
+}
+
+func getImg() image.Image {
+	const n = 512
+	img := image.NewRGBA(image.Rect(0, 0, n, n))
+	abs := func(n int) int {
+		if n < 0 {
+			return -n
+		}
+		return n
+	}
+	sq := func(i int) int { return i * i }
+
+	for x := 0; x <= n; x++ {
+		for y := 0; y <= n; y++ {
+			if x == n/2 && y == n/2 {
+				continue
+			}
+			d := math.Sqrt(float64(sq(abs(x-n/2)) + sq(abs(y-n/2))))
+			if d > n/2 {
+				continue
+			}
+
+			sin := float64(y-n/2) / d
+			deg := math.Asin(sin)/math.Pi*359.0 + 180
+			sec := int(deg) / 60
+
+			var fix, mod *uint8
+			var inc bool
+
+			c := color.RGBA{0, 0, 0, 0xFF}
+			switch sec {
+			case 0:
+				fix, mod = &c.R, &c.G
+				inc = true
+			case 1:
+				fix, mod = &c.G, &c.R
+				inc = false
+			case 2:
+				fix, mod = &c.G, &c.B
+				inc = true
+			case 3:
+				fix, mod = &c.B, &c.G
+				inc = false
+			case 4:
+				fix, mod = &c.B, &c.R
+				inc = true
+			case 5:
+				fix, mod = &c.R, &c.B
+				inc = false
+			default:
+				panic(fmt.Sprintf("deg=%f sec=%d", deg, sec))
+			}
+
+			v := uint8((int(deg) % 60) * 255.0 / 60.0)
+			*fix = 255
+			if inc {
+				*mod = v
+			} else {
+				*mod = 255 - v
+			}
+			img.Set(x, y, c)
+
+		}
+	}
+	return img
 }
