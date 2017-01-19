@@ -59,6 +59,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/cache/{n:[\d]+}`, SetCacheHandler).Methods("GET")
 	r.HandleFunc(`/gzip`, GZIPHandler).Methods("GET")
 	r.HandleFunc(`/deflate`, DeflateHandler).Methods("GET")
+	r.HandleFunc(`/html`, HTMLHandler).Methods("GET")
 	r.HandleFunc(`/xml`, XMLHandler).Methods("GET")
 	r.HandleFunc(`/robots.txt`, RobotsTXTHandler).Methods("GET")
 	r.HandleFunc(`/deny`, DenyHandler).Methods("GET")
@@ -433,6 +434,12 @@ func basicAuthHandler(w http.ResponseWriter, r *http.Request, status int) {
 			writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
 		}
 	}
+}
+
+// HTMLHandler returns some HTML response.
+func HTMLHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	fmt.Fprint(w, htmlData)
 }
 
 // XMLHandler returns some XML response.
