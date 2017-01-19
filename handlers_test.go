@@ -607,6 +607,20 @@ func TestHiddenBasicAuthHandler_correctCreds(t *testing.T) {
 	require.Equal(t, tt{Authenticated: true, User: "foouser"}, v)
 }
 
+func TestHTML(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/html")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+
+	doc, err := ioutil.ReadAll(resp.Body)
+	require.Nil(t, err)
+
+	require.Contains(t, string(doc), "Moby-Dick")
+}
+
 func TestXML(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
