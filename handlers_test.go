@@ -667,6 +667,18 @@ func TestJPEG(t *testing.T) {
 	require.EqualValues(t, "image/jpeg", resp.Header.Get("Content-Type"))
 }
 
+func TestGIF(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/image/gif")
+	require.Nil(t, err)
+	defer resp.Body.Close()
+
+	require.EqualValues(t, http.StatusOK, resp.StatusCode)
+	require.EqualValues(t, "image/gif", resp.Header.Get("Content-Type"))
+}
+
 func TestPNG(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()

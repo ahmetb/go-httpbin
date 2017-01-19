@@ -36,6 +36,7 @@ This way, you can write tests without relying on an external dependency like [ht
 - `/hidden-basic-auth/:user/:passwd` Challenges HTTP Basic Auth and returns 404 on failure.
 - `/html` Returns some HTML
 - `/xml` Returns some XML
+- `/image/gif` Returns page containing an animated GIF image.
 - `/image/png` Returns page containing a PNG image.
 - `/image/jpeg` Returns page containing a JPEG image.
 
