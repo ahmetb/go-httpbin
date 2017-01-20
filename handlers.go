@@ -48,11 +48,11 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/redirect-to`, RedirectToHandler).Methods("GET").Queries("url", "{url:.+}")
 	r.HandleFunc(`/status/{code:[\d]+}`, StatusHandler).Methods("GET")
 	r.HandleFunc(`/bytes/{n:[\d]+}`, BytesHandler).Methods("GET")
-	r.HandleFunc(`/delay/{n:\d+(\.\d+)?}`, DelayHandler).Methods("GET")
+	r.HandleFunc(`/delay/{n:\d+(?:\.\d+)?}`, DelayHandler).Methods("GET")
 	r.HandleFunc(`/stream/{n:[\d]+}`, StreamHandler).Methods("GET")
 	r.HandleFunc(`/drip`, DripHandler).Methods("GET").Queries(
 		"numbytes", `{numbytes:\d+}`,
-		"duration", `{duration:\d+(\.\d+)?}`)
+		"duration", `{duration:\d+(?:\.\d+)?}`)
 	r.HandleFunc(`/cookies`, CookiesHandler).Methods("GET")
 	r.HandleFunc(`/cookies/set`, SetCookiesHandler).Methods("GET")
 	r.HandleFunc(`/cookies/delete`, DeleteCookiesHandler).Methods("GET")
