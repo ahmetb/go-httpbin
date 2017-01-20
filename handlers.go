@@ -459,9 +459,8 @@ func (c *circle) Brightness(x, y float64) uint8 {
 	d := math.Sqrt(dx*dx+dy*dy) / c.R
 	if d > 1 {
 		return 0
-	} else {
-		return 255
 	}
+	return 255
 }
 
 // GIFHandler returns an animated GIF image.
@@ -469,7 +468,7 @@ func (c *circle) Brightness(x, y float64) uint8 {
 func GIFHandler(rw http.ResponseWriter, r *http.Request) {
 	var w, h int = 240, 240
 	var hw, hh float64 = float64(w / 2), float64(h / 2)
-	circles := []*circle{&circle{}, &circle{}, &circle{}}
+	circles := []*circle{{}, {}, {}}
 
 	var palette = []color.Color{
 		color.RGBA{0x00, 0x00, 0x00, 0xff},
