@@ -87,6 +87,13 @@ func TestDownload(t *testing.T) {
 }
 ```
 
+go-httpbin works from the command line as well:
+
+```
+$ go get github.com/ahmetalpbalkan/go-httpbin/cmd/httpbin
+$ $GOPATH/bin/httpbin -host :8080
+```
+
 # License
 
 ```
