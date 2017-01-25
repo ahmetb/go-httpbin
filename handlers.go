@@ -359,7 +359,7 @@ func GZIPHandler(w http.ResponseWriter, r *http.Request) {
 		ipResponse:      ipResponse{h},
 		Gzipped:         true,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Add("Content-Encoding", "gzip")
 	ww := gzip.NewWriter(w)

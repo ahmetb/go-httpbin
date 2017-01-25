@@ -466,7 +466,7 @@ func TestGZIP(t *testing.T) {
 	defer srv.Close()
 
 	client := new(http.Client)
-	req, err := http.NewRequest("GET", srv.URL + "/gzip", nil)
+	req, err := http.NewRequest("GET", srv.URL+"/gzip", nil)
 	require.Nil(t, err)
 
 	req.Header.Add("Accept-Encoding", "gzip")
