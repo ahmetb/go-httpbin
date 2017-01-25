@@ -3,6 +3,7 @@ package httpbin_test
 import (
 	"bytes"
 	"compress/flate"
+	"compress/gzip"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -15,7 +16,6 @@ import (
 	"net/url"
 	"testing"
 	"time"
-
 	"github.com/ahmetalpbalkan/go-httpbin"
 	"github.com/stretchr/testify/require"
 )
@@ -464,21 +464,28 @@ func TestGZIP(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
 
-	resp, err := http.Get(srv.URL + "/gzip")
+	client := new(http.Client)
+	req, err := http.NewRequest("GET", srv.URL + "/gzip", nil)
+	require.Nil(t, err)
+
+	req.Header.Add("Accept-Encoding", "gzip")
+	resp, err := client.Do(req)
 	require.Nil(t, err)
 	defer resp.Body.Close()
 
-	// net/http.Client removes "Content-Encoding: gzip"
-	// and adds "Content-Type: application/x-gzip" in the
-	// absence of "Content-Type" header.
-	require.EqualValues(t, "application/x-gzip", resp.Header.Get("Content-Type"))
+	require.EqualValues(t, "gzip", resp.Header.Get("Content-Encoding"))
+	require.EqualValues(t, "application/json", resp.Header.Get("Content-Type"))
+
+	zr, err := gzip.NewReader(resp.Body)
+	require.Nil(t, err)
 
 	var v struct {
 		Gzipped bool `json:"gzipped"`
 	}
-	require.Nil(t, json.NewDecoder(resp.Body).Decode(&v))
+	require.Nil(t, json.NewDecoder(zr).Decode(&v))
 	require.True(t, v.Gzipped)
 }
+
 
 func TestDeflate(t *testing.T) {
 	srv := testServer()
