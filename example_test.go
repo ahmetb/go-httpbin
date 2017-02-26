@@ -2,10 +2,10 @@ package httpbin_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"io/ioutil"
 
 	"github.com/ahmetb/go-httpbin"
 )
