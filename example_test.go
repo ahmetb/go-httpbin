@@ -5,10 +5,9 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-
 	"io/ioutil"
 
-	"github.com/ahmetalpbalkan/go-httpbin"
+	"github.com/ahmetb/go-httpbin"
 )
 
 func ExampleGetMux_httptest() {

@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ahmetalpbalkan/go-httpbin"
+	"github.com/ahmetb/go-httpbin"
 	"github.com/stretchr/testify/require"
 )
 
