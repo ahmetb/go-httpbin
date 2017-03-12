@@ -94,6 +94,16 @@ $ go get github.com/ahmetb/go-httpbin/cmd/httpbin
 $ $GOPATH/bin/httpbin -host :8080
 ```
 
+# Development
+
+You must have the following tools installed on your system:
+
+- [Glide](https://github.com/Masterminds/glide) 0.12.0 or above
+- [Go](https://golang.org/) 1.7 or above
+
+To get started, simply run `glide install` to install all the dependencies of this package.
+Then, run `go test $(glide nv)` to test it.
+
 # License
 
 ```
