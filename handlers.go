@@ -39,6 +39,7 @@ var (
 // GetMux returns the mux with handlers for httpbin endpoints registered.
 func GetMux() *mux.Router {
 	r := mux.NewRouter()
+	r.HandleFunc(`/`, HomeHandler).Methods("GET")
 	r.HandleFunc(`/ip`, IPHandler).Methods("GET")
 	r.HandleFunc(`/user-agent`, UserAgentHandler).Methods("GET")
 	r.HandleFunc(`/headers`, HeadersHandler).Methods("GET")
@@ -70,6 +71,23 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/image/png`, PNGHandler).Methods("GET")
 	r.HandleFunc(`/image/jpeg`, JPEGHandler).Methods("GET")
 	return r
+}
+
+// HomeHandler serves static HTML content for the index page.
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, `<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<title>go-httpbin</title>
+	<head>
+	<body>
+		<h1>go-httpbin</h1>
+		<p>
+			<a href="https://github.com/ahmetb/go-httpbin">
+				Read documentation &rarr;
+			</a>
+	</body>
+	</html>`)
 }
 
 // IPHandler returns Origin IP.

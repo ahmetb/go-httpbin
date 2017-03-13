@@ -81,6 +81,14 @@ func assertLocationHeader(t *testing.T, u, expected string) {
 	require.Equal(t, expected, resp.Header.Get("Location"), u)
 }
 
+func TestHome(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	b := get(t, srv.URL)
+	require.Regexp(t, "<!DOCTYPE html>", string(b))
+}
+
 func TestIP(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
