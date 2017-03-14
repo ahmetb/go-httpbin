@@ -3,6 +3,7 @@
 package httpbin
 
 import (
+	"bytes"
 	"compress/flate"
 	"compress/gzip"
 	"encoding/json"
@@ -528,10 +529,14 @@ func GIFHandler(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	gif.EncodeAll(rw, &gif.GIF{
+	// buffer output to generate length
+	buf := new(bytes.Buffer)
+	gif.EncodeAll(buf, &gif.GIF{
 		Image: images,
 		Delay: delays,
 	})
+	rw.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
+	rw.Write(buf.Bytes())
 }
 
 // JPEGHandler returns a JPEG image.
