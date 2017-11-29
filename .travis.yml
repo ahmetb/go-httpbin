@@ -2,8 +2,6 @@ sudo: false
 language: go
 go: go1.9
 install:
-  - mkdir -p $GOPATH/src/github.com/ahmetb
-  - ln -s $GOPATH/src/github.com/dbenque/go-httpbin $GOPATH/src/github.com/ahmetb/go-httpbin
   - go get -u github.com/golang/lint/golint
 script:
   - test -z "$(gofmt -s -l -w . | tee /dev/stderr)"
