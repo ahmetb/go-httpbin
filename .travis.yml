@@ -1,11 +1,12 @@
 sudo: false
 language: go
-go: go1.7
+go: go1.9
 install:
+  - mkdir -p $GOPATH/src/github.com/ahmetd
+  - ln -s $GOPATH/src/github.com/dbenque/go-httpbin $GOPATH/src/github.com/ahmetd/go-httpbin
+  - curl https://glide.sh/get | sh
+  - glide install
   - go get -u github.com/golang/lint/golint
-  - go get github.com/gorilla/mux
-  - go get github.com/pkg/errors
-  - go get github.com/stretchr/testify/require
 script:
   - test -z "$(gofmt -s -l -w . | tee /dev/stderr)"
   - test -z "$(golint . | tee /dev/stderr)"
