@@ -14,6 +14,7 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
+	"runtime"
 	"testing"
 	"time"
 
@@ -401,10 +402,19 @@ func TestDeleteCookies(t *testing.T) {
 	for _, c := range cj.Cookies(u) {
 		cs = append(cs, c.String())
 	}
-	require.Contains(t, cs, "k1=")
-	require.Contains(t, cs, "k2=")
-	require.Contains(t, cs, "k3=v3")
-	require.Equal(t, 3, len(cs))
+	if runtime.Version() >= "go1.8" {
+		require.NotContains(t, cs, "k1=")
+		require.NotContains(t, cs, "k2=")
+		require.NotContains(t, cs, "k1=v1")
+		require.NotContains(t, cs, "k2=v2")
+		require.Contains(t, cs, "k3=v3")
+		require.Equal(t, 1, len(cs))
+	} else {
+		require.Contains(t, cs, "k1=")
+		require.Contains(t, cs, "k2=")
+		require.Contains(t, cs, "k3=v3")
+		require.Equal(t, 3, len(cs))
+	}
 }
 
 func TestDrip_code(t *testing.T) {

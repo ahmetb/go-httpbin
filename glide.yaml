@@ -1,6 +1,5 @@
 package: github.com/arschles/go-httpbin
 import:
-- package: github.com/ahmetb/go-httpbin
 - package: github.com/gorilla/mux
   version: ~1.3.0
 - package: github.com/pkg/errors

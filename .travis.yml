@@ -2,13 +2,13 @@ sudo: false
 language: go
 go: go1.9
 install:
-  - mkdir -p $GOPATH/src/github.com/ahmetd
-  - ln -s $GOPATH/src/github.com/dbenque/go-httpbin $GOPATH/src/github.com/ahmetd/go-httpbin
-  - curl https://glide.sh/get | sh
-  - glide install
+  - mkdir -p $GOPATH/src/github.com/ahmetb
+  - ln -s $GOPATH/src/github.com/dbenque/go-httpbin $GOPATH/src/github.com/ahmetb/go-httpbin
   - go get -u github.com/golang/lint/golint
 script:
   - test -z "$(gofmt -s -l -w . | tee /dev/stderr)"
   - test -z "$(golint . | tee /dev/stderr)"
   - go vet -v .
+  - curl https://glide.sh/get | sh
+  - glide install
   - go test -v -cover  ./...
