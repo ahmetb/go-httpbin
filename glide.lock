@@ -1,8 +1,6 @@
-hash: 4bd1a8e2ca78b71807c2ad50d56d8522d123a5ed79536856ef3071b44a54496b
-updated: 2017-03-12T09:06:52.165140388-07:00
+hash: 7a39c9c07050489fbd69126b112f5f2cd2686e9a0506ffc294d06213322a8fe0
+updated: 2017-11-29T23:10:11.45869886+01:00
 imports:
-- name: github.com/ahmetb/go-httpbin
-  version: 4ca994120406564e3a6ac8a177c194ac9ca3ae8b
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
