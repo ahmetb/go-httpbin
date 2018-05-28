@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/ahmetb/go-httpbin"
+	httpbin "github.com/ahmetb/go-httpbin"
 )
 
 func ExampleGetMux_httptest() {

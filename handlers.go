@@ -13,11 +13,13 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+	"io/ioutil"
 	"math"
 	"math/rand"
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -44,10 +46,11 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/user-agent`, UserAgentHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/headers`, HeadersHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/get`, GetHandler).Methods(http.MethodGet, http.MethodHead)
+	r.HandleFunc(`/post`, PostHandler).Methods(http.MethodPost)
 	r.HandleFunc(`/redirect/{n:[\d]+}`, RedirectHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/absolute-redirect/{n:[\d]+}`, AbsoluteRedirectHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/redirect-to`, RedirectToHandler).Methods(http.MethodGet, http.MethodHead).Queries("url", "{url:.+}")
-	r.HandleFunc(`/status/{code:[\d]+}`, StatusHandler).Methods(http.MethodGet, http.MethodHead)
+	r.HandleFunc(`/status/{code:[\d]+}`, StatusHandler)
 	r.HandleFunc(`/bytes/{n:[\d]+}`, BytesHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/delay/{n:\d+(?:\.\d+)?}`, DelayHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/stream/{n:[\d]+}`, StreamHandler).Methods(http.MethodGet, http.MethodHead)
@@ -120,6 +123,38 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 		headersResponse: headersResponse{getHeaders(r)},
 		ipResponse:      ipResponse{h},
 		Args:            flattenValues(r.URL.Query()),
+	}
+
+	if err := writeJSON(w, v); err != nil {
+		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
+	}
+}
+
+// PostHandler accept a post and echo its data back
+func PostHandler(w http.ResponseWriter, r *http.Request) {
+	h, _, _ := net.SplitHostPort(r.RemoteAddr)
+
+	data, err := parseData(r)
+	if err != nil {
+		writeErrorJSON(w, errors.Wrap(err, "failed to read body"))
+		return
+	}
+
+	var jsonPayload interface{}
+	if strings.Contains(r.Header.Get("Content-Type"), "json") {
+		err := json.Unmarshal(data, &jsonPayload)
+		if err != nil {
+			writeErrorJSON(w, errors.Wrap(err, "failed to read body"))
+			return
+		}
+	}
+
+	v := postResponse{
+		headersResponse: headersResponse{getHeaders(r)},
+		ipResponse:      ipResponse{h},
+		Args:            flattenValues(r.URL.Query()),
+		Data:            string(data),
+		JSON:            jsonPayload,
 	}
 
 	if err := writeJSON(w, v); err != nil {
@@ -608,4 +643,17 @@ func getImg() image.Image {
 		}
 	}
 	return img
+}
+
+func parseData(r *http.Request) ([]byte, error) {
+	if r.Body == nil {
+		return []byte{}, nil
+	}
+
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return data, nil
 }
