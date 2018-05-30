@@ -647,12 +647,13 @@ func getImg() image.Image {
 
 func parseData(r *http.Request) ([]byte, error) {
 	if r.Body == nil {
-		return []byte{}, nil
+		return nil, nil
 	}
+	defer r.Body.Close()
 
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	return data, nil

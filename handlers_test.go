@@ -58,17 +58,17 @@ func noFollow(method string, cl *http.Client, u string) (*http.Response, error) 
 }
 
 func get(t *testing.T, url string) []byte {
-	return req(t, url, "GET", "")
+	return req(t, url, "GET", nil)
 }
 
-func post(t *testing.T, url, body string) []byte {
+func post(t *testing.T, url string, body []byte) []byte {
 	return req(t, url, "POST", body)
 }
 
-func req(t *testing.T, url, method, body string) []byte {
+func req(t *testing.T, url, method string, body []byte) []byte {
 	cl := &http.Client{}
 
-	r, err := http.NewRequest(method, url, bytes.NewReader([]byte(body)))
+	r, err := http.NewRequest(method, url, bytes.NewReader(body))
 	require.Nil(t, err, "cannot create request")
 
 	resp, err := cl.Do(r)
@@ -159,7 +159,7 @@ func TestPost(t *testing.T) {
 
 	data := `{[{"k1": "v1"}]}`
 
-	b := post(t, srv.URL+"/post?k1=v1&k1=v2&k3=v3", data)
+	b := post(t, srv.URL+"/post?k1=v1&k1=v2&k3=v3", []byte(data))
 	v := struct {
 		Args    map[string]interface{} `json:"args"`
 		Headers map[string]string      `json:"headers"`
@@ -168,7 +168,6 @@ func TestPost(t *testing.T) {
 		JSON    interface{}            `json:"json"`
 	}{}
 	require.Nil(t, json.Unmarshal(b, &v))
-	require.NotEmpty(t, v.Args, "args empty")
 	require.EqualValues(t, map[string]interface{}{
 		"k1": []interface{}{"v1", "v2"},
 		"k3": "v3",
@@ -223,8 +222,8 @@ func TestStatus_assertValidCodes(t *testing.T) {
 		for _, code := range codes {
 			u := fmt.Sprintf("%s/status/%d", srv.URL, code)
 			resp, err := noFollow(method, noRedirectClient(), u)
-			require.Nil(t, err, u)
-			require.Equal(t, code, resp.StatusCode, "%s %s", method, u)
+			require.NoErrorf(t, err, "%s %s", method, u)
+			require.Equalf(t, code, resp.StatusCode, "invalid status from %s %s", method, u)
 		}
 	}
 }
