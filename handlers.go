@@ -40,15 +40,6 @@ var (
 
 // GetMux returns the mux with handlers for httpbin endpoints registered.
 func GetMux() *mux.Router {
-	supportedMethods := []string{
-		http.MethodHead,
-		http.MethodGet,
-		http.MethodPost,
-		http.MethodPatch,
-		http.MethodDelete,
-		http.MethodTrace,
-		http.MethodOptions,
-	}
 
 	r := mux.NewRouter()
 	r.HandleFunc(`/`, HomeHandler).Methods(http.MethodGet, http.MethodHead)
