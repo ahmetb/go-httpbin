@@ -211,7 +211,15 @@ func TestStatus_assertValidCodes(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
 
-	methods := []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete}
+	methods := []string{
+		http.MethodGet,
+		http.MethodPost,
+		http.MethodPut,
+		http.MethodDelete,
+		http.MethodPatch,
+		http.MethodOptions,
+		http.MethodTrace,
+	}
 
 	codes := []int{200, 201, 202, 203, 204, 205, 206, 207, 208, 226,
 		300, 301, 302, 303, 304, 305, 307, 308, 400, 401, 402, 403, 404, 405, 406,
