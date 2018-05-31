@@ -1,5 +1,5 @@
-hash: 7a39c9c07050489fbd69126b112f5f2cd2686e9a0506ffc294d06213322a8fe0
-updated: 2017-11-29T23:10:11.45869886+01:00
+hash: dfcfc8201cfb1598706b482f1da8fcdc6c6513aeb1933308a7f0d5736a3c32ab
+updated: 2018-05-31T23:58:25.975525+03:00
 imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
@@ -17,7 +17,7 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
   subpackages:
   - assert
   - require

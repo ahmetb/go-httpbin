@@ -51,7 +51,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/redirect/{n:[\d]+}`, RedirectHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/absolute-redirect/{n:[\d]+}`, AbsoluteRedirectHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/redirect-to`, RedirectToHandler).Methods(http.MethodGet, http.MethodHead).Queries("url", "{url:.+}")
-	r.HandleFunc(`/status/{code:[\d]+}`, StatusHandler).Methods(supportedMethods...)
+	r.HandleFunc(`/status/{code:[\d]+}`, StatusHandler)
 	r.HandleFunc(`/bytes/{n:[\d]+}`, BytesHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/delay/{n:\d+(?:\.\d+)?}`, DelayHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/stream/{n:[\d]+}`, StreamHandler).Methods(http.MethodGet, http.MethodHead)
