@@ -31,6 +31,17 @@ type getResponse struct {
 	Args map[string]interface{} `json:"args"`
 }
 
+type postResponse struct {
+	headersResponse
+	ipResponse
+	URL   string                 `json:"url"`
+	Args  map[string]interface{} `json:"args"`
+	Data  string                 `json:"data"`
+	Files map[string]string      `json:"files"`
+	Form  map[string]interface{} `json:"form"`
+	JSON  interface{}            `json:"json"`
+}
+
 type gzipResponse struct {
 	headersResponse
 	ipResponse

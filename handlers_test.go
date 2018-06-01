@@ -39,28 +39,36 @@ func noRedirectClient() *http.Client {
 }
 
 func noFollowGet(cl *http.Client, u string) (*http.Response, error) {
-	resp, err := cl.Get(u)
+	return noFollow("GET", cl, u)
+}
+
+func noFollow(method string, cl *http.Client, u string) (*http.Response, error) {
+	req, err := http.NewRequest(method, u, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: method=%s url=%q error=%v", method, u, err)
+	}
+	resp, err := cl.Do(req)
 	if err != nil {
 		e, ok := err.(*url.Error)
 		if ok && e.Err != errNoFollow {
-			return nil, fmt.Errorf("failed to get: url=%q error=%v", u, err)
+			return nil, fmt.Errorf("failed to get: method=%s url=%q error=%v", method, u, err)
 		}
 	}
 	return resp, nil
 }
 
 func get(t *testing.T, url string) []byte {
-	return req(t, url, "GET")
+	return req(t, url, "GET", nil)
 }
 
-func post(t *testing.T, url string) []byte {
-	return req(t, url, "POST")
+func post(t *testing.T, url string, body []byte) []byte {
+	return req(t, url, "POST", body)
 }
 
-func req(t *testing.T, url, method string) []byte {
+func req(t *testing.T, url, method string, body []byte) []byte {
 	cl := &http.Client{}
 
-	r, err := http.NewRequest(method, url, nil)
+	r, err := http.NewRequest(method, url, bytes.NewReader(body))
 	require.Nil(t, err, "cannot create request")
 
 	resp, err := cl.Do(r)
@@ -145,6 +153,30 @@ func TestGet(t *testing.T) {
 	require.NotEmpty(t, v.Headers)
 	require.NotEmpty(t, v.Origin)
 }
+func TestPost(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	data := `{[{"k1": "v1"}]}`
+
+	b := post(t, srv.URL+"/post?k1=v1&k1=v2&k3=v3", []byte(data))
+	v := struct {
+		Args    map[string]interface{} `json:"args"`
+		Headers map[string]string      `json:"headers"`
+		Origin  string                 `json:"origin"`
+		Data    string                 `json:"data"`
+		JSON    interface{}            `json:"json"`
+	}{}
+	require.Nil(t, json.Unmarshal(b, &v))
+	require.EqualValues(t, map[string]interface{}{
+		"k1": []interface{}{"v1", "v2"},
+		"k3": "v3",
+	}, v.Args)
+
+	require.EqualValues(t, data, v.Data)
+	require.NotEmpty(t, v.Headers)
+	require.NotEmpty(t, v.Origin)
+}
 
 func TestRedirect(t *testing.T) {
 	srv := testServer()
@@ -179,16 +211,28 @@ func TestStatus_assertValidCodes(t *testing.T) {
 	srv := testServer()
 	defer srv.Close()
 
+	methods := []string{
+		http.MethodGet,
+		http.MethodPost,
+		http.MethodPut,
+		http.MethodDelete,
+		http.MethodPatch,
+		http.MethodOptions,
+		http.MethodTrace,
+	}
+
 	codes := []int{200, 201, 202, 203, 204, 205, 206, 207, 208, 226,
 		300, 301, 302, 303, 304, 305, 307, 308, 400, 401, 402, 403, 404, 405, 406,
 		407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 422, 423, 424,
 		426, 428, 429, 431, 451, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511}
 
-	for _, code := range codes {
-		u := fmt.Sprintf("%s/status/%d", srv.URL, code)
-		resp, err := noFollowGet(noRedirectClient(), u)
-		require.Nil(t, err, u)
-		require.Equal(t, code, resp.StatusCode, u)
+	for _, method := range methods {
+		for _, code := range codes {
+			u := fmt.Sprintf("%s/status/%d", srv.URL, code)
+			resp, err := noFollow(method, noRedirectClient(), u)
+			require.NoErrorf(t, err, "%s %s", method, u)
+			require.Equalf(t, code, resp.StatusCode, "invalid status from %s %s", method, u)
+		}
 	}
 }
 
