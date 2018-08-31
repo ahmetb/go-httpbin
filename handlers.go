@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/andybalholm/brotli"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -64,6 +65,7 @@ func GetMux() *mux.Router {
 	r.HandleFunc(`/cache`, CacheHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/cache/{n:[\d]+}`, SetCacheHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/gzip`, GZIPHandler).Methods(http.MethodGet, http.MethodHead)
+	r.HandleFunc(`/brotli`, BrotliHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/deflate`, DeflateHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/html`, HTMLHandler).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc(`/xml`, XMLHandler).Methods(http.MethodGet, http.MethodHead)
@@ -435,6 +437,25 @@ func DeflateHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Encoding", "deflate")
 	ww, _ := flate.NewWriter(w, flate.BestCompression)
+	defer ww.Close() // flush
+	if err := writeJSON(ww, v); err != nil {
+		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
+	}
+}
+
+// BrotliHandler returns a Brotli-encoded response
+func BrotliHandler(w http.ResponseWriter, r *http.Request) {
+	h, _, _ := net.SplitHostPort(r.RemoteAddr)
+
+	v := brotliResponse{
+		headersResponse: headersResponse{getHeaders(r)},
+		ipResponse:      ipResponse{h},
+		Compressed:      true,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Add("Content-Encoding", "br")
+	ww := brotli.NewWriter(w)
 	defer ww.Close() // flush
 	if err := writeJSON(ww, v); err != nil {
 		writeErrorJSON(w, errors.Wrap(err, "failed to write json"))
