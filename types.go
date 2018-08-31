@@ -54,6 +54,12 @@ type deflateResponse struct {
 	Deflated bool `json:"deflated"`
 }
 
+type brotliResponse struct {
+	headersResponse
+	ipResponse
+	Compressed bool `json:"compressed"`
+}
+
 type basicAuthResponse struct {
 	Authenticated bool   `json:"authenticated"`
 	User          string `json:"string"`
