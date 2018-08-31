@@ -20,6 +20,7 @@ import (
 
 	"github.com/ahmetb/go-httpbin"
 	"github.com/stretchr/testify/require"
+	brotlidec "gopkg.in/kothar/brotli-go.v0/dec"
 )
 
 var (
@@ -566,6 +567,30 @@ func TestDeflate(t *testing.T) {
 	defer rr.Close()
 	require.Nil(t, json.NewDecoder(rr).Decode(&v))
 	require.True(t, v.Deflated)
+}
+
+func TestBrotli(t *testing.T) {
+	srv := testServer()
+	defer srv.Close()
+
+	client := new(http.Client)
+	req, err := http.NewRequest("GET", srv.URL+"/brotli", nil)
+	require.Nil(t, err)
+
+	req.Header.Add("Accept-Encoding", "br")
+	resp, err := client.Do(req)
+	require.Nil(t, err)
+	defer resp.Body.Close()
+
+	require.EqualValues(t, "br", resp.Header.Get("Content-Encoding"))
+	require.EqualValues(t, "application/json", resp.Header.Get("Content-Type"))
+	zr := brotlidec.NewBrotliReader(resp.Body)
+
+	var v struct {
+		Compressed bool `json:"compressed"`
+	}
+	require.Nil(t, json.NewDecoder(zr).Decode(&v))
+	require.True(t, v.Compressed)
 }
 
 func TestRobotsTXT(t *testing.T) {
