@@ -626,7 +626,7 @@ func TestBasicAuthHandler_correctCreds(t *testing.T) {
 
 	type tt struct {
 		Authenticated bool   `json:"authenticated"`
-		User          string `json:"string"`
+		User          string `json:"user"`
 	}
 	var v tt
 	require.Nil(t, json.NewDecoder(resp.Body).Decode(&v))
@@ -668,7 +668,7 @@ func TestHiddenBasicAuthHandler_correctCreds(t *testing.T) {
 
 	type tt struct {
 		Authenticated bool   `json:"authenticated"`
-		User          string `json:"string"`
+		User          string `json:"user"`
 	}
 	var v tt
 	require.Nil(t, json.NewDecoder(resp.Body).Decode(&v))
