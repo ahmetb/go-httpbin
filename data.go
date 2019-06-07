@@ -15,7 +15,7 @@ const (
       </div>
   </body>
 </html>`
-	xmlData = `<?xml version='1.0'?>
+	xmlData = `<?xml version='1.0' encoding='us-ascii'?>
 
 <!--  A SAMPLE set of slides  -->
 
