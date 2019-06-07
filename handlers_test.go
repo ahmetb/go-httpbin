@@ -20,6 +20,8 @@ import (
 
 	"github.com/ahmetb/go-httpbin"
 	"github.com/stretchr/testify/require"
+
+	"golang.org/x/net/html/charset"
 )
 
 var (
@@ -709,9 +711,9 @@ func TestXML(t *testing.T) {
 		Slides  []slide  `xml:"slide"`
 	}
 	var v val
-	b, err := ioutil.ReadAll(resp.Body)
-	require.Nil(t, err)
-	require.Nil(t, xml.Unmarshal(b, &v))
+	decoder := xml.NewDecoder(resp.Body)
+	decoder.CharsetReader = charset.NewReaderLabel
+	require.Nil(t, decoder.Decode(&v))
 	require.Equal(t, val{
 		XMLName: xml.Name{Local: "slideshow"},
 		Title:   "Sample Slide Show",
