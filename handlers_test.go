@@ -448,7 +448,7 @@ func TestDeleteCookies(t *testing.T) {
 	for _, c := range cj.Cookies(u) {
 		cs = append(cs, c.String())
 	}
-	if runtime.Version() >= "go1.8" {
+	if runtime.Version() >= "go1.8" || runtime.Version() >= "go1.10" {
 		require.NotContains(t, cs, "k1=")
 		require.NotContains(t, cs, "k2=")
 		require.NotContains(t, cs, "k1=v1")
