@@ -1,6 +1,8 @@
-hash: c074de462b0a6e667f5766563335c9a2eaf1516145f761c578e68563783833e7
-updated: 2019-06-07T11:58:06.044198393-07:00
+hash: 09ca2e335bb4d2607ccbfb105bc73dbc72e1ff1ed4a4f4d8ef346822cb8fbc07
+updated: 2020-09-21T12:06:57.23507818+09:00
 imports:
+- name: github.com/andybalholm/brotli
+  version: b60f0d972eeb79a5fba5fb60f1e0568bc8c97e42
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
@@ -22,13 +24,13 @@ testImports:
   - assert
   - require
 - name: golang.org/x/net
-  version: 461777fb6f67e8cb9d70cda16573678d085a74cf
+  version: 62affa334b73ec65ed44a326519ac12c421905e3
   subpackages:
   - html
   - html/atom
   - html/charset
 - name: golang.org/x/text
-  version: 342b2e1fbaa52c93f31447ad2c6abc048c63e475
+  version: a8b4671254579a87fadf9f7fa577dc7368e9d009
   subpackages:
   - encoding
   - encoding/charmap
