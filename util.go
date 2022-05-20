@@ -12,6 +12,7 @@ import (
 func writeJSON(w io.Writer, v interface{}) error {
 	e := json.NewEncoder(w)
 	e.SetIndent("", "  ")
+	writer.Header().Set("Content-Type", "application/json")
 	return errors.Wrap(e.Encode(v), "failed to encode JSON")
 }
 
